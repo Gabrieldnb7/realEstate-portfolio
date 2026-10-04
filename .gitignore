@@ -30,3 +30,11 @@ coverage/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Banco de dados SQLite gerado (criado por npm run migrar)
+dados/*.sqlite
+dados/*.sqlite-shm
+dados/*.sqlite-wal
+
+# Uploads de fotos (gerados por npm run semear:teste)
+uploads/
