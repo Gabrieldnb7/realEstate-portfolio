@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Entrar no painel · +55 Real Estate Global</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 26rem; line-height: 1.5; }
+      label { display: block; margin-bottom: 1rem; }
+      input { display: block; width: 100%; padding: .5rem; margin-top: .25rem; }
+      button { padding: .6rem 1rem; }
+      .erro { color: #a3232a; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Entrar no painel</h1>
+
+      <% if (it.erro) { %>
+        <p class="erro" role="alert"><%= it.erro %></p>
+      <% } %>
+
+      <form method="post" action="/admin/login">
+        <label>
+          E-mail
+          <input name="email" type="email" autocomplete="username" required />
+        </label>
+        <label>
+          Senha
+          <input name="senha" type="password" autocomplete="current-password" required />
+        </label>
+        <button type="submit">Entrar</button>
+      </form>
+
+      <p>
+        Projeto de avaliação técnica. Imóveis, valores e contatos fictícios.
+      </p>
+    </main>
+  </body>
+</html>

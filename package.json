@@ -17,7 +17,7 @@
   "scripts": {
     "migrar": "tsx scripts/migrar.ts",
     "semear:teste": "tsx scripts/semear-teste.ts",
-    "build": "tsc",
+    "build": "tsc && tsx scripts/copiar-views.ts",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "test": "vitest run",

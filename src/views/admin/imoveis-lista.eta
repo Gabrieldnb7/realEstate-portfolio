@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Imóveis do portfólio · Painel +55</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 64rem; line-height: 1.5; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { text-align: left; padding: .5rem; border-bottom: 1px solid #d9d2c7; vertical-align: top; }
+      nav { display: flex; gap: 1rem; align-items: center; }
+      .aviso { padding: .5rem; background: #eef3ea; }
+      .erro { color: #a3232a; }
+      .num { text-align: right; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <h1>Imóveis do portfólio</h1>
+        <a href="/admin/imoveis/novo">Novo imóvel</a>
+        <form method="post" action="/admin/logout">
+          <button type="submit">Sair</button>
+        </form>
+      </nav>
+      <p>Sessão de <%= it.nomeUsuario %>.</p>
+
+      <% if (it.feedback) { %><p class="aviso" role="status"><%= it.feedback %></p><% } %>
+      <% if (it.erro) { %><p class="erro" role="alert"><%= it.erro %></p><% } %>
+    </header>
+
+    <main>
+      <% if (it.resumos.length === 0) { %>
+        <p>Nenhum imóvel cadastrado. Comece por Novo imóvel.</p>
+      <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Referência</th>
+              <th>Título</th>
+              <th>Tipologia</th>
+              <th>Praça</th>
+              <th>Cidade e bairro</th>
+              <th class="num">Preço</th>
+              <th class="num">Fotos</th>
+              <th>Situação</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% it.resumos.forEach(function (imovel) { %>
+              <tr>
+                <td><%= imovel.ref %></td>
+                <td><%= imovel.titulo %></td>
+                <td><%= imovel.tipologia %></td>
+                <td><%= imovel.pais %></td>
+                <td><%= imovel.cidade %> / <%= imovel.bairro %></td>
+                <td class="num">
+                  <% if (imovel.preco) { %>
+                    <%= imovel.preco.valor %> <%= imovel.preco.moeda %>
+                  <% } else { %>
+                    a consultar
+                  <% } %>
+                </td>
+                <td class="num">
+                  <%= imovel.totalFotos %>
+                  <% if (imovel.fotosSemDescricao > 0) { %>
+                    (<%= imovel.fotosSemDescricao %> sem descrição)
+                  <% } %>
+                </td>
+                <td><%= imovel.situacao %></td>
+                <td><a href="/admin/imoveis/<%= imovel.id %>/editar">Editar</a></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } %>
+    </main>
+
+    <footer>
+      <p>Projeto de avaliação técnica. Imóveis, valores e contatos fictícios.</p>
+    </footer>
+  </body>
+</html>

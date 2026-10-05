@@ -38,3 +38,6 @@ dados/*.sqlite-wal
 
 # Uploads de fotos (gerados por npm run semear:teste)
 uploads/
+
+# Anotações e arquivos temporários da bancada de desenvolvimento
+.tmp/
