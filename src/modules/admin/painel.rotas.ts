@@ -1,5 +1,6 @@
-// Páginas do painel: lista e formulário. O formulário envia urlencoded e recebe 302 depois
-// de gravar, então funciona com JavaScript desligado; as validações são as mesmas da API.
+// Páginas do painel: lista, formulário de imóvel e textos institucionais. O formulário envia
+// urlencoded e recebe 302 depois de gravar, então funciona com JavaScript desligado; as
+// validações são as mesmas da API.
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { DominioInvalidoError } from '../../entities/index.js';
 import type { ErroCampo, Tipologia } from '../../entities/index.js';
@@ -16,6 +17,14 @@ import {
   registroParaFormulario,
 } from './imoveis.servico.js';
 import type { RegistroImovel } from '../../repositories/imoveis/imovel.repositorio.js';
+import type { CamposTexto, ChaveTexto } from '../../repositories/textos/texto.repositorio.js';
+import {
+  CampoObrigatorioAusenteError,
+  PAGINAS_COM_TEXTO,
+  PaginaNaoEditavelError,
+  salvarTextoDaPagina,
+  textoDaPagina,
+} from './textos.servico.js';
 
 const TIPOLOGIAS: Tipologia[] = ['apartamento', 'penthouse', 'villa', 'estate'];
 
@@ -24,6 +33,25 @@ const MENSAGENS_FEEDBACK: Record<string, string> = {
   situacao: 'Situação atualizada.',
   foto: 'Foto enviada.',
   foto_removida: 'Foto removida.',
+  texto: 'Texto gravado.',
+};
+
+// Os campos que a tela mostra; qualquer outro campo livre continua sendo gravado.
+const FORMULARIOS_DE_TEXTO: Record<
+  ChaveTexto,
+  { rotulo: string; campos: { campo: string; rotulo: string; multilinha: boolean }[] }
+> = {
+  inicio: {
+    rotulo: 'Início',
+    campos: [
+      { campo: 'titulo', rotulo: 'Título', multilinha: false },
+      { campo: 'descricao', rotulo: 'Frase de apoio', multilinha: true },
+    ],
+  },
+  rodape: {
+    rotulo: 'Rodapé',
+    campos: [{ campo: 'texto', rotulo: 'Texto do rodapé', multilinha: true }],
+  },
 };
 
 function corpoDaRequisicao(request: FastifyRequest): Record<string, unknown> {
@@ -211,6 +239,43 @@ function nomeQuemUsa(request: FastifyRequest): string {
   return request.usuarioLogado?.nome ?? 'Equipe';
 }
 
+function contextoTextos(opcoes: {
+  nomeUsuario: string;
+  valores: Partial<Record<ChaveTexto, CamposTexto>>;
+  erros?: Record<string, string>;
+  feedback?: string | null;
+}) {
+  const erros = opcoes.erros ?? {};
+
+  return {
+    tituloPagina: 'Textos do site',
+    nomeUsuario: opcoes.nomeUsuario,
+    feedback: opcoes.feedback ?? null,
+    paginas: PAGINAS_COM_TEXTO.map((pagina) => ({
+      pagina,
+      rotulo: FORMULARIOS_DE_TEXTO[pagina].rotulo,
+      acao: `/admin/textos/${pagina}`,
+      campos: FORMULARIOS_DE_TEXTO[pagina].campos.map((campo) => {
+        const chave = `${pagina}.${campo.campo}`;
+        return {
+          campo: campo.campo,
+          rotulo: campo.rotulo,
+          multilinha: campo.multilinha,
+          valor: opcoes.valores[pagina]?.[campo.campo] ?? '',
+          erro: erros[chave] ?? null,
+        };
+      }),
+    })),
+  };
+}
+
+function valoresDosTextos(): Record<ChaveTexto, CamposTexto> {
+  return {
+    inicio: textoDaPagina('inicio').campos,
+    rodape: textoDaPagina('rodape').campos,
+  };
+}
+
 export async function rotasPainel(app: FastifyInstance): Promise<void> {
   app.get('/admin', async (request: FastifyRequest, reply: FastifyReply) => {
     const query = request.query as Record<string, unknown>;
@@ -379,4 +444,60 @@ export async function rotasPainel(app: FastifyInstance): Promise<void> {
       }
     }
   );
+
+  app.get('/admin/textos', async (request: FastifyRequest, reply: FastifyReply) => {
+    const query = request.query as Record<string, unknown>;
+
+    return reply.view('admin/textos-form.eta', {
+      ...contextoTextos({
+        nomeUsuario: nomeQuemUsa(request),
+        valores: valoresDosTextos(),
+        feedback: MENSAGENS_FEEDBACK[texto(query['feito'])] ?? null,
+      }),
+    });
+  });
+
+  app.post('/admin/textos/:pagina', async (request: FastifyRequest, reply: FastifyReply) => {
+    const pagina = (request.params as { pagina?: string }).pagina ?? '';
+    const enviados: CamposTexto = {};
+    for (const [campo, valor] of Object.entries(corpoDaRequisicao(request))) {
+      enviados[campo] = texto(valor);
+    }
+
+    try {
+      salvarTextoDaPagina(pagina, { campos: enviados });
+      return reply.redirect('/admin/textos?feito=texto', 302);
+    } catch (erro) {
+      if (erro instanceof PaginaNaoEditavelError) {
+        return reply.status(404).type('text/plain').send('pagina_nao_editavel');
+      }
+
+      // Sem redirecionar: a pessoa usuária vê o erro com o texto digitado ainda nos campos.
+      if (erro instanceof CampoObrigatorioAusenteError || erro instanceof DominioInvalidoError) {
+        const status = erro instanceof CampoObrigatorioAusenteError ? 400 : 422;
+        const erros: Record<string, string> = {};
+        for (const campo of erro.campos) {
+          const chave = `${pagina}.${campo.campo}`;
+          if (!(chave in erros)) erros[chave] = mensagemDoCampo(campo);
+        }
+
+        // Aqui a página já é conhecida: o erro de página fora da lista foi tratado acima.
+        const valores: Partial<Record<ChaveTexto, CamposTexto>> = valoresDosTextos();
+        valores[pagina as ChaveTexto] = enviados;
+
+        return reply
+          .status(status)
+          .view('admin/textos-form.eta', {
+            ...contextoTextos({
+              nomeUsuario: nomeQuemUsa(request),
+              valores,
+              erros,
+            }),
+          });
+      }
+
+      request.log.error({ err: erro }, 'falha inesperada ao gravar texto');
+      return reply.status(500).type('text/plain').send('falha_interna');
+    }
+  });
 }

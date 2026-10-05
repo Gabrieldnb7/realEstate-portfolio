@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Textos do site · Painel +55</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 48rem; line-height: 1.5; }
+      nav { display: flex; gap: 1rem; align-items: center; }
+      fieldset { border: 1px solid #d9d2c7; margin: 0 0 2rem; padding: 1rem; }
+      legend { font-weight: 600; }
+      label { display: block; margin-top: .75rem; }
+      input, textarea { font: inherit; width: 100%; padding: .4rem; border: 1px solid #8c867a; }
+      p { margin: .5rem 0; }
+      .aviso { padding: .5rem; background: #eef3ea; }
+      .erro { color: #a3232a; }
+      .dica { color: #5e5a52; font-size: .9rem; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <h1><%= it.tituloPagina %></h1>
+        <a href="/admin">Imóveis</a>
+        <form method="post" action="/admin/logout">
+          <button type="submit">Sair</button>
+        </form>
+      </nav>
+      <p>Sessão de <%= it.nomeUsuario %>.</p>
+
+      <% if (it.feedback) { %><p class="aviso" role="status"><%= it.feedback %></p><% } %>
+    </header>
+
+    <main>
+      <p>O texto salvo aparece no site público na hora. Gravar substitui o texto anterior.</p>
+
+      <% it.paginas.forEach(function (pagina) { %>
+        <form method="post" action="<%= pagina.acao %>">
+          <fieldset>
+            <legend><%= pagina.rotulo %></legend>
+
+            <% pagina.campos.forEach(function (campo) { %>
+              <label for="<%= pagina.pagina %>-<%= campo.campo %>"><%= campo.rotulo %></label>
+              <% if (campo.multilinha) { %>
+                <textarea id="<%= pagina.pagina %>-<%= campo.campo %>" name="<%= campo.campo %>" rows="3"
+                  maxlength="500"><%= campo.valor %></textarea>
+              <% } else { %>
+                <input id="<%= pagina.pagina %>-<%= campo.campo %>" name="<%= campo.campo %>" type="text"
+                  maxlength="500" value="<%= campo.valor %>" />
+              <% } %>
+              <% if (campo.erro) { %><p class="erro" role="alert"><%= campo.erro %></p><% } %>
+            <% }); %>
+
+            <% if (pagina.pagina === 'rodape') { %>
+              <p class="dica">O aviso obrigatório de projeto de avaliação técnica faz parte da página e não é editável.</p>
+            <% } %>
+
+            <p><button type="submit">Salvar</button></p>
+          </fieldset>
+        </form>
+      <% }); %>
+    </main>
+
+    <footer>
+      <p>Projeto de avaliação técnica. Imóveis, valores e contatos fictícios.</p>
+    </footer>
+  </body>
+</html>

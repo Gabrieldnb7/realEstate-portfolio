@@ -20,6 +20,7 @@ const MENSAGENS_POR_CODIGO: Record<string, string> = {
   formato: 'Formato não aceito. Envie JPEG, PNG ou WebP.',
   descricao: 'Descreva a foto: a descrição aparece para quem visita o site.',
   imagem_nao_encontrada: 'Essa foto não está mais no imóvel.',
+  maximo_excedido: 'Texto longo demais. Use até 500 caracteres.',
 };
 
 export function mensagemDoCampo(erro: ErroCampo): string {

@@ -12,10 +12,12 @@ import { LIMITE_BYTES_POR_IMAGEM } from './infra/armazenamento/upload.js';
 import { rotasFotosImovel } from './modules/admin/fotos.rotas.js';
 import { rotasImoveisAdmin } from './modules/admin/imoveis.rotas.js';
 import { rotasPainel } from './modules/admin/painel.rotas.js';
+import { rotasTextosAdmin } from './modules/admin/textos.rotas.js';
 import { rotasAutenticacao } from './modules/auth/auth.rotas.js';
 import { rotasPaginaLogin } from './modules/auth/login.rotas.js';
 import { registrarProtecaoPainel } from './repositories/seguranca/hooks.js';
 import { rotasMidia } from './routes/media.js';
+import { rotasSite } from './routes/site.js';
 import { saudeRoutes } from './routes/saude.js';
 
 export async function buildApp() {
@@ -79,10 +81,12 @@ export async function buildApp() {
   });
 
   app.register(saudeRoutes);
+  app.register(rotasSite);
   app.register(rotasMidia);
   app.register(rotasAutenticacao);
   app.register(rotasPaginaLogin);
   app.register(rotasImoveisAdmin);
+  app.register(rotasTextosAdmin);
   app.register(rotasFotosImovel);
   app.register(rotasPainel);
 

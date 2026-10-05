@@ -19,6 +19,7 @@
       <nav>
         <h1>Imóveis do portfólio</h1>
         <a href="/admin/imoveis/novo">Novo imóvel</a>
+        <a href="/admin/textos">Textos do site</a>
         <form method="post" action="/admin/logout">
           <button type="submit">Sair</button>
         </form>

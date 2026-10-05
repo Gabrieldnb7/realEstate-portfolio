@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= it.tituloPagina %> · Portfólio imobiliário +55Hub</title>
+    <style>
+      :root {
+        --c-primary: #1F3A34;
+        --c-on-primary: #FFFFFF;
+        --c-brass-text: #7A5A34;
+        --c-ink: #1A1A17;
+        --c-ink-muted: #5E5A52;
+        --c-line: #D9D3C7;
+        --c-paper: #F4F1EA;
+        --c-surface: #FBFAF6;
+        --c-night: #121714;
+        --c-night-ink: #ECE7DC;
+        --c-night-muted: #A7A193;
+      }
+      body {
+        margin: 0;
+        background: var(--c-paper);
+        color: var(--c-ink);
+        font-family: "Instrument Sans", system-ui, sans-serif;
+        line-height: 1.6;
+        /* O rodapé fecha a janela mesmo quando a página tem pouco conteúdo. */
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+      }
+      .topo {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 1rem;
+        padding: 1.25rem 1.5rem;
+        background: var(--c-primary);
+        color: var(--c-on-primary);
+      }
+      .topo a { color: var(--c-on-primary); }
+      .marca { margin: 0; letter-spacing: .12em; text-transform: uppercase; font-size: .75rem; }
+      .topo nav { display: flex; gap: 1rem; }
+      main { flex: 1 0 auto; max-width: 68rem; margin: 0 auto; padding: 2.5rem 1.5rem; }
+      section { margin-bottom: 3rem; }
+      h1 { font-family: Georgia, serif; font-size: 2.5rem; line-height: 1.1; margin: 0 0 1rem; max-width: 22ch; }
+      h2 { font-size: 1.1rem; letter-spacing: .12em; text-transform: uppercase; color: var(--c-brass-text); margin: 0 0 .75rem; }
+      .chamada { font-size: 1.25rem; color: var(--c-ink-muted); max-width: 46ch; margin: 0; }
+      .pracas { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); list-style: none; padding: 0; margin: 0; }
+      .pracas li { background: var(--c-surface); border: 1px solid var(--c-line); padding: 1rem; }
+      .pracas h3 { margin: 0 0 .25rem; font-size: 1rem; }
+      .pracas p { margin: 0; color: var(--c-ink-muted); font-size: .9rem; }
+      .rodape { background: var(--c-night); color: var(--c-night-ink); padding: 2rem 1.5rem; }
+      .rodape p { max-width: 68rem; margin: 0 auto .5rem; }
+      .rodape a { color: var(--c-night-ink); }
+      .aviso { color: var(--c-night-muted); font-size: .875rem; }
+    </style>
+  </head>
+  <body>
+    <header class="topo">
+      <p class="marca">+55Hub Corporate Group</p>
+      <nav>
+        <a href="/">Início</a>
+        <a href="/admin">Painel</a>
+      </nav>
+    </header>
+
+    <main>
+      <%~ it.body %>
+    </main>
+
+    <footer class="rodape">
+      <% if (it.rodape.texto) { %><p><%= it.rodape.texto %></p><% } %>
+      <p>Fale com a equipe: <a href="mailto:consultoria@realestate.example">consultoria@realestate.example</a></p>
+      <p class="aviso"><%= it.aviso %></p>
+    </footer>
+  </body>
+</html>
