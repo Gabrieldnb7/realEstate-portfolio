@@ -1,9 +1,10 @@
-import { hash } from '@node-rs/argon2';
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { conectarBanco, fecharBanco } from '../src/infra/db.js';
+import { criarHashSenha } from '../src/repositories/seguranca/senhas.js';
+import { normalizarEmail } from '../src/modules/auth/auth.servico.js';
 import { executarMigracoes } from './migrar.js';
 
 // ─── Parser CSV robusto ───────────────────────────────────────────────
@@ -197,12 +198,12 @@ export async function semearBase(): Promise<void> {
   const db = conectarBanco();
 
   // 2. Administrador inicial
-  const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@realestate.example';
+  const adminEmail = normalizarEmail(process.env.ADMIN_EMAIL ?? 'admin@realestate.example');
   const adminSenha = process.env.ADMIN_SENHA ?? 'AdminSeguro123!';
 
   const adminExiste = db.prepare('SELECT id FROM usuarios WHERE email = ?').get(adminEmail);
   if (!adminExiste) {
-    const senhaHash = await hash(adminSenha);
+    const senhaHash = await criarHashSenha(adminSenha);
     db.prepare(`
       INSERT INTO usuarios (id, nome, email, senha_hash, criado_em)
       VALUES (?, ?, ?, ?, ?)

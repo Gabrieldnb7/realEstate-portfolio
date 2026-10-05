@@ -86,7 +86,7 @@ describe('Validações de Regras do Catálogo e Tipologias', () => {
         cidade: 'Cidade do Panamá',
         bairro: 'Costa del Este',
         descricao: 'Descrição',
-        preco: { valor: '1250000.00', moeda: 'BRL' }, // Inválido: Panamá exige USD
+        preco: { valor: '1250000.00', moeda: 'BRL' },
         areaPrivativa: '180.00',
         andar: 28,
         quartos: 3,

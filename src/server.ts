@@ -1,13 +1,17 @@
 import { buildApp } from './app.js';
+import { carregarConfig, ConfiguraçãoInvalidaError } from './config/ambiente.js';
 
-async function start() {
-  const app = await buildApp();
-
+async function start(): Promise<void> {
   try {
-    await app.listen({ port: 3000, host: '0.0.0.0' });
-    console.log('🚀 Servidor rodando na porta 3000');
-  } catch (err) {
-    app.log.error(err);
+    const config = carregarConfig();
+    const app = await buildApp();
+    await app.listen({ port: config.porta, host: '0.0.0.0' });
+  } catch (erro) {
+    if (erro instanceof ConfiguraçãoInvalidaError) {
+      console.error(`[config] ${erro.message}`);
+    } else {
+      console.error(erro);
+    }
     process.exit(1);
   }
 }
