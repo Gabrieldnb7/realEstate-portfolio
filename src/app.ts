@@ -1,5 +1,6 @@
 import fastifyCookie from '@fastify/cookie';
 import fastifyCors from '@fastify/cors';
+import fastifyMultipart from '@fastify/multipart';
 import fastifyRateLimit from '@fastify/rate-limit';
 import fastifyView from '@fastify/view';
 import { Eta } from 'eta';
@@ -7,11 +8,14 @@ import Fastify, { type FastifyError } from 'fastify';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { carregarConfig } from './config/ambiente.js';
+import { LIMITE_BYTES_POR_IMAGEM } from './infra/armazenamento/upload.js';
+import { rotasFotosImovel } from './modules/admin/fotos.rotas.js';
 import { rotasImoveisAdmin } from './modules/admin/imoveis.rotas.js';
 import { rotasPainel } from './modules/admin/painel.rotas.js';
 import { rotasAutenticacao } from './modules/auth/auth.rotas.js';
 import { rotasPaginaLogin } from './modules/auth/login.rotas.js';
 import { registrarProtecaoPainel } from './repositories/seguranca/hooks.js';
+import { rotasMidia } from './routes/media.js';
 import { saudeRoutes } from './routes/saude.js';
 
 export async function buildApp() {
@@ -33,6 +37,17 @@ export async function buildApp() {
   app.register(fastifyView, {
     engine: { eta: eta },
     root: pastaViews,
+  });
+
+  // Limite de 5 MB por foto aplicado pelo parser, antes de qualquer gravação em disco.
+  app.register(fastifyMultipart, {
+    limits: {
+      fileSize: LIMITE_BYTES_POR_IMAGEM,
+      files: 1,
+      fields: 8,
+      fieldSize: 8 * 1024,
+      headerPairs: 64,
+    },
   });
 
   app.register(fastifyCors, {
@@ -64,9 +79,11 @@ export async function buildApp() {
   });
 
   app.register(saudeRoutes);
+  app.register(rotasMidia);
   app.register(rotasAutenticacao);
   app.register(rotasPaginaLogin);
   app.register(rotasImoveisAdmin);
+  app.register(rotasFotosImovel);
   app.register(rotasPainel);
 
   return app;

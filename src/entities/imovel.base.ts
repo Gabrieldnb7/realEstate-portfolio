@@ -5,6 +5,9 @@ import { type SituacaoImovel, validarTransicaoSituacao } from './situacao.js';
 
 export type Tipologia = 'apartamento' | 'penthouse' | 'villa' | 'estate';
 
+// Anexo C, seção 6: de 1 a 12 fotos por imóvel.
+export const LIMITE_IMAGENS_POR_IMOVEL = 12;
+
 export const TIPOLOGIAS_VALIDAS: readonly Tipologia[] = [
   'apartamento',
   'penthouse',
@@ -97,10 +100,13 @@ export abstract class Imovel {
   }
 
   public adicionarImagem(imagem: Imagem): void {
-    if (this._imagens.length >= 12) {
-      throw new DominioInvalidoError('Limite máximo de 12 imagens por imóvel atingido.', [
-        { campo: 'imagens', codigo: 'limite_excedido' },
-      ]);
+    if (this._imagens.length >= LIMITE_IMAGENS_POR_IMOVEL) {
+      throw new DominioInvalidoError(
+        `Limite máximo de ${LIMITE_IMAGENS_POR_IMOVEL} imagens por imóvel atingido.`,
+        [
+          { campo: 'imagens', codigo: 'limite_excedido' },
+        ]
+      );
     }
 
     imagem.ordem = this._imagens.length;

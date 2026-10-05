@@ -193,6 +193,14 @@ export function buscarRegistro(id: string): RegistroImovel | null {
   };
 }
 
+export function imovelExiste(id: string): boolean {
+  const linha = conectarBanco().prepare('SELECT id FROM imoveis WHERE id = ?').get(id) as
+    | { id: string }
+    | undefined;
+
+  return linha !== undefined;
+}
+
 export function existeReferencia(ref: string, ignorarId?: string): boolean {
   const linha = conectarBanco()
     .prepare('SELECT id FROM imoveis WHERE ref = ? AND id <> ?')

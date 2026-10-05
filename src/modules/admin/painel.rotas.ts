@@ -3,7 +3,10 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { DominioInvalidoError } from '../../entities/index.js';
 import type { ErroCampo, Tipologia } from '../../entities/index.js';
+import { FormatodeImagemInvalidoError } from '../../infra/armazenamento/upload.js';
 import { errosPorCampo, mensagemDoCampo } from '../../utils/mensagens.campos.js';
+import { ArquivoGrandeDemaisError, lerUploadDeImagem } from './fotos.entrada.js';
+import { ImagemNaoEncontradaError, adicionarFoto, removerFoto } from './fotos.servico.js';
 import {
   ImovelNaoEncontradoError,
   atualizarImovelNoCatalogo,
@@ -19,6 +22,8 @@ const TIPOLOGIAS: Tipologia[] = ['apartamento', 'penthouse', 'villa', 'estate'];
 const MENSAGENS_FEEDBACK: Record<string, string> = {
   salvo: 'Dados gravados.',
   situacao: 'Situação atualizada.',
+  foto: 'Foto enviada.',
+  foto_removida: 'Foto removida.',
 };
 
 function corpoDaRequisicao(request: FastifyRequest): Record<string, unknown> {
@@ -145,6 +150,7 @@ function contextoFormulario(opcoes: {
   acao: string;
   nomeUsuario: string;
   titulo?: string;
+  erroFoto?: string | null;
 }) {
   const { registro } = opcoes;
 
@@ -163,8 +169,10 @@ function contextoFormulario(opcoes: {
           slug: registro.slug,
           situacao: registro.situacao,
           totalFotos: registro.imagens.length,
+          fotos: registro.imagens,
         }
       : null,
+    erroFoto: opcoes.erroFoto ?? null,
     nomeUsuario: opcoes.nomeUsuario,
   };
 }
@@ -252,6 +260,7 @@ export async function rotasPainel(app: FastifyInstance): Promise<void> {
     try {
       const registro = registroParaFormulario(id);
       const query = request.query as Record<string, unknown>;
+      const codigoErro = texto(query['erro']);
 
       return reply.view('admin/imovel-form.eta', {
         ...contextoFormulario({
@@ -262,6 +271,7 @@ export async function rotasPainel(app: FastifyInstance): Promise<void> {
           registro,
           acao: `/admin/imoveis/${id}/editar`,
           nomeUsuario: nomeQuemUsa(request),
+          erroFoto: codigoErro ? mensagemDoCampo({ campo: 'imagens', codigo: codigoErro }) : null,
         }),
         feedback: MENSAGENS_FEEDBACK[texto(query['feito'])] ?? null,
       });
@@ -313,4 +323,60 @@ export async function rotasPainel(app: FastifyInstance): Promise<void> {
       return reply.status(500).type('text/plain').send('falha_interna');
     }
   });
+
+  app.post('/admin/imoveis/:id/fotos', async (request: FastifyRequest, reply: FastifyReply) => {
+    const id = (request.params as { id?: string }).id ?? '';
+    const destino = (chave: string) => reply.redirect(`/admin/imoveis/${id}/editar?erro=${chave}`, 302);
+
+    try {
+      const entrada = await lerUploadDeImagem(request);
+
+      if (!entrada.arquivo) return destino('arquivo');
+
+      adicionarFoto(id, {
+        conteudo: entrada.arquivo.conteudo,
+        nomeOriginal: entrada.arquivo.nomeOriginal,
+        alt: entrada.alt,
+      });
+
+      return reply.redirect(`/admin/imoveis/${id}/editar?feito=foto`, 302);
+    } catch (erro) {
+      if (erro instanceof ImovelNaoEncontradoError) {
+        return reply.status(404).type('text/plain').send('imovel_nao_encontrado');
+      }
+      if (erro instanceof ArquivoGrandeDemaisError) return destino('tamanho');
+      if (erro instanceof FormatodeImagemInvalidoError) return destino('formato');
+
+      if (erro instanceof DominioInvalidoError) {
+        const codigo = erro.campos[0]?.codigo ?? 'formato';
+        return destino(codigo === 'obrigatorio' ? 'descricao' : codigo);
+      }
+
+      request.log.error({ err: erro }, 'falha inesperada ao enviar foto');
+      return reply.status(500).type('text/plain').send('falha_interna');
+    }
+  });
+
+  app.post(
+    '/admin/imoveis/:id/fotos/remover',
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const id = (request.params as { id?: string }).id ?? '';
+      const imagemId = texto(corpoDaRequisicao(request)['imagemId']);
+
+      try {
+        removerFoto(id, imagemId);
+        return reply.redirect(`/admin/imoveis/${id}/editar?feito=foto_removida`, 302);
+      } catch (erro) {
+        if (erro instanceof ImagemNaoEncontradaError) {
+          return reply.redirect(`/admin/imoveis/${id}/editar?erro=imagem_nao_encontrada`, 302);
+        }
+        if (erro instanceof ImovelNaoEncontradoError) {
+          return reply.status(404).type('text/plain').send('imovel_nao_encontrado');
+        }
+
+        request.log.error({ err: erro }, 'falha inesperada ao remover foto');
+        return reply.status(500).type('text/plain').send('falha_interna');
+      }
+    }
+  );
 }

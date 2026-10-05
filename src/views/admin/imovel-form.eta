@@ -19,6 +19,10 @@
       .tipos .atual { font-weight: 700; }
       fieldset { border: 1px solid #d9d2c7; margin: 0 0 1rem; padding: 1rem; }
       legend { padding: 0 .25rem; }
+      .fotos { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+      .fotos li { border: 1px solid #d9d2c7; padding: .5rem; width: 11rem; }
+      .fotos img { display: block; height: auto; }
+      .capa { font-weight: 700; }
     </style>
   </head>
   <body>
@@ -180,6 +184,43 @@
       </form>
 
       <% if (it.imovel) { %>
+        <fieldset>
+          <legend>Fotos</legend>
+          <p>De 1 a 12 fotos por imóvel, em JPEG, PNG ou WebP, com até 5 MB cada. A primeira foto enviada é a capa.</p>
+
+          <% if (it.erroFoto) { %><p class="erro" role="alert"><%= it.erroFoto %></p><% } %>
+
+          <% if (it.imovel.fotos.length === 0) { %>
+            <p>Nenhuma foto enviada.</p>
+          <% } else { %>
+            <ul class="fotos">
+              <% it.imovel.fotos.forEach(function (foto, indice) { %>
+                <li>
+                  <img src="<%= foto.url %>" alt="<%= foto.alt %>" width="160" />
+                  <p><%= foto.alt %></p>
+                  <% if (indice === 0) { %><p class="capa">Capa</p><% } %>
+                  <form method="post" action="/admin/imoveis/<%= it.imovel.id %>/fotos/remover">
+                    <input type="hidden" name="imagemId" value="<%= foto.id %>" />
+                    <button type="submit">Remover</button>
+                  </form>
+                </li>
+              <% }); %>
+            </ul>
+          <% } %>
+
+          <form method="post" action="/admin/imoveis/<%= it.imovel.id %>/fotos" enctype="multipart/form-data">
+            <label>
+              Arquivo
+              <input type="file" name="arquivo" accept="image/jpeg,image/png,image/webp" />
+            </label>
+            <label>
+              Descrição da foto
+              <input name="alt" />
+            </label>
+            <button type="submit">Enviar foto</button>
+          </form>
+        </fieldset>
+
         <fieldset>
           <legend>Situação e publicação</legend>
           <p>Slug: <%= it.imovel.slug %></p>

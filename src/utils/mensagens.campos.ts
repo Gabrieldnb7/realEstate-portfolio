@@ -14,6 +14,12 @@ const MENSAGENS_POR_CODIGO: Record<string, string> = {
   texto_invalido: 'Use texto.',
   vendido_imutavel: 'Imóvel vendido não volta a ser oferecido.',
   fotos_obrigatorias_para_publicacao: 'Publique apenas com pelo menos uma foto e todas as fotos descritas.',
+  limite_excedido: 'O imóvel aceita no máximo 12 fotos.',
+  arquivo: 'Selecione o arquivo da foto.',
+  tamanho: 'A foto precisa ter no máximo 5 MB.',
+  formato: 'Formato não aceito. Envie JPEG, PNG ou WebP.',
+  descricao: 'Descreva a foto: a descrição aparece para quem visita o site.',
+  imagem_nao_encontrada: 'Essa foto não está mais no imóvel.',
 };
 
 export function mensagemDoCampo(erro: ErroCampo): string {
