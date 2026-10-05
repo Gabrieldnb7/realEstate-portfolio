@@ -1,0 +1,52 @@
+<section class="abertura">
+  <p class="ref">Referência <%= it.ref %></p>
+  <h1><%= it.titulo %></h1>
+  <p class="chamada"><%= it.local %></p>
+  <% if (it.selo) { %><p class="selo"><%= it.selo %></p><% } %>
+</section>
+
+<section class="toc">
+  <% if (it.preco) { %><p class="preco"><%= it.preco %></p><% } else { %><p class="preco">Preço sob consulta</p><% } %>
+  <% if (it.precoPorM2 && it.areaBase) { %>
+    <p class="preco-m2"><%= it.precoPorM2 %> por m², calculado sobre <%= it.areaBase %> de área.</p>
+  <% } %>
+  <% if (it.whatsappUrl) { %>
+    <p><a class="botao" href="<%= it.whatsappUrl %>">Falar com a equipe no WhatsApp</a></p>
+  <% } %>
+</section>
+
+<section>
+  <h2>Fotos</h2>
+  <% if (it.imagens.length === 0) { %>
+    <p class="vazio">Nenhuma foto no ar.</p>
+  <% } else { %>
+    <ul class="fotos">
+      <% it.imagens.forEach(function (imagem) { %>
+        <li>
+          <figure>
+            <img src="<%= imagem.url %>" alt="<%= imagem.alt %>" loading="lazy" />
+            <figcaption><%= imagem.alt %></figcaption>
+          </figure>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+</section>
+
+<section>
+  <h2>Ficha técnica</h2>
+  <dl class="ficha">
+    <% it.especificacoes.forEach(function (linha) { %>
+      <div>
+        <dt><%= linha.rotulo %></dt>
+        <dd><%= linha.valor %></dd>
+      </div>
+    <% }); %>
+  </dl>
+</section>
+
+<section>
+  <h2>Descrição</h2>
+  <p><%= it.descricao %></p>
+  <p class="voltar"><a href="/imoveis">Voltar para o catálogo</a></p>
+</section>

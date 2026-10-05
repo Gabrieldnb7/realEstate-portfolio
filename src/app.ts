@@ -17,8 +17,9 @@ import { rotasAutenticacao } from './modules/auth/auth.rotas.js';
 import { rotasPaginaLogin } from './modules/auth/login.rotas.js';
 import { registrarProtecaoPainel } from './repositories/seguranca/hooks.js';
 import { rotasCatalogo } from './routes/catalogo.rotas.js';
+import { rotasDetalhe } from './routes/detalhe.rotas.js';
 import { rotasMidia } from './routes/media.js';
-import { AVISO_DE_PROJETO, rotasSite, textoDoRodape } from './routes/site.js';
+import { baseDaPaginaPublica, rotasSite } from './routes/site.js';
 import { saudeRoutes } from './routes/saude.js';
 
 export async function buildApp() {
@@ -84,6 +85,7 @@ export async function buildApp() {
   app.register(saudeRoutes);
   app.register(rotasSite);
   app.register(rotasCatalogo);
+  app.register(rotasDetalhe);
   app.register(rotasMidia);
   app.register(rotasAutenticacao);
   app.register(rotasPaginaLogin);
@@ -102,11 +104,7 @@ export async function buildApp() {
 
     return reply.status(404).view(
       'site/nao-encontrado.eta',
-      {
-        tituloPagina: 'Não encontrado',
-        rodape: textoDoRodape(),
-        aviso: AVISO_DE_PROJETO,
-      },
+      baseDaPaginaPublica('Não encontrado'),
       { layout: 'site/layout.eta' }
     );
   });

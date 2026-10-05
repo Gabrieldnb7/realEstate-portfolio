@@ -28,6 +28,7 @@ export interface ConfigApp {
   segredoApp: string;
   ttlSessaoSegundos: number;
   cookieSeguro: boolean;
+  whatsappE164: string | null;
 }
 
 export class ConfiguraçãoInvalidaError extends Error {}
@@ -66,6 +67,20 @@ function lerPorta(): number {
   return porta;
 }
 
+// WHATSAPP_E164 chega como +5511999999999. Sem número válido injetado, o site não mostra o botão;
+// o link nunca é montado com um número quebrado.
+const DIGITOS_MINIMOS_E164 = 10;
+const DIGITOS_MAXIMOS_E164 = 15;
+
+function lerWhatsappE164(): string | null {
+  const bruto = lerTexto('WHATSAPP_E164');
+  if (bruto === '') return null;
+
+  const digitos = bruto.replace(/\D/g, '');
+  if (digitos.length < DIGITOS_MINIMOS_E164 || digitos.length > DIGITOS_MAXIMOS_E164) return null;
+  return `+${digitos}`;
+}
+
 export function carregarConfig(): ConfigApp {
   carregarArquivoEnv();
 
@@ -79,5 +94,6 @@ export function carregarConfig(): ConfigApp {
     ttlSessaoSegundos: lerTtlSessao(),
     // Em produção o cookie só trafega sobre HTTPS, independentemente do valor injetado.
     cookieSeguro: ambiente === 'production' || cookieSeguroConfigurado,
+    whatsappE164: lerWhatsappE164(),
   };
 }

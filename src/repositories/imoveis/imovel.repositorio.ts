@@ -294,6 +294,15 @@ export function buscarRegistro(id: string): RegistroImovel | null {
   };
 }
 
+// A URL pública usa slug; o registro completo continua keyed pelo id.
+export function buscarRegistroPorSlug(slug: string): RegistroImovel | null {
+  const linha = conectarBanco().prepare('SELECT id FROM imoveis WHERE slug = ?').get(slug) as
+    | { id: string }
+    | undefined;
+
+  return linha ? buscarRegistro(linha.id) : null;
+}
+
 export function imovelExiste(id: string): boolean {
   const linha = conectarBanco().prepare('SELECT id FROM imoveis WHERE id = ?').get(id) as
     | { id: string }

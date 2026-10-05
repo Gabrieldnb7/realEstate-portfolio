@@ -9,7 +9,7 @@ import {
 } from '../services/catalogo.servico.js';
 import type { ParametrosCatalogo } from '../services/catalogo.servico.js';
 import { cartoesDoSite } from '../utils/cartoes.site.js';
-import { AVISO_DE_PROJETO, textoDoRodape } from './site.js';
+import { baseDaPaginaPublica } from './site.js';
 
 const NOMES_DAS_PRACAS: Record<Praca, string> = {
   BR: 'Brasil',
@@ -87,9 +87,7 @@ export async function rotasCatalogo(app: FastifyInstance): Promise<void> {
     return reply.view(
       'site/catalogo.eta',
       {
-        tituloPagina: 'Imóveis',
-        rodape: textoDoRodape(),
-        aviso: AVISO_DE_PROJETO,
+        ...baseDaPaginaPublica('Imóveis'),
         filtros: opcoesDeFiltro(filtros),
         rotuloTotal: `${total} ${total === 1 ? 'imóvel' : 'imóveis'} nesta seleção.`,
         cartoes: cartoesDoSite(listagem.itens),

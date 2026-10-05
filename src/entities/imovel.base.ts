@@ -15,6 +15,17 @@ export const TIPOLOGIAS_VALIDAS: readonly Tipologia[] = [
   'estate',
 ] as const;
 
+// Anexo C, seção 3: o preço por m² da ficha é calculado sobre a área privativa em apartamento e
+// penthouse, e sobre a área construída em villa e estate.
+export function areaBaseParaPrecoPorM2(
+  tipologia: Tipologia,
+  areas: { areaPrivativa: string | null; areaConstruida: string | null }
+): string | null {
+  return tipologia === 'apartamento' || tipologia === 'penthouse'
+    ? areas.areaPrivativa
+    : areas.areaConstruida;
+}
+
 export interface ImovelProps {
   id?: string | undefined;
   ref: string;

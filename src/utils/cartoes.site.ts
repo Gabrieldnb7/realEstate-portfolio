@@ -9,13 +9,17 @@ const SELO_POR_SITUACAO: Partial<Record<SituacaoImovel, string>> = {
   vendido: 'Vendido',
 };
 
+export function seloDaSituacao(situacao: SituacaoImovel): string | null {
+  return SELO_POR_SITUACAO[situacao] ?? null;
+}
+
 export function cartoesDoSite(itens: ItemDaListagem[]) {
   return itens.map((imovel) => ({
     url: `/imoveis/${imovel.slug}`,
     titulo: imovel.titulo,
     local: `${imovel.cidade}, ${imovel.bairro}`,
     preco: precoParaTela(imovel.preco),
-    selo: SELO_POR_SITUACAO[imovel.situacao] ?? null,
+    selo: seloDaSituacao(imovel.situacao),
     capa: imovel.capa,
   }));
 }

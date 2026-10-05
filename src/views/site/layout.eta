@@ -70,6 +70,20 @@
       .preco { margin: .5rem 0 0; color: var(--c-brass-text); font-weight: 600; }
       .selo { display: inline-block; margin: .5rem 0 0; padding: .2rem .5rem; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; background: var(--c-primary); color: var(--c-on-primary); }
       .ver-tudo { margin: 0; }
+      .ref { margin: 0 0 .5rem; letter-spacing: .12em; text-transform: uppercase; font-size: .75rem; color: var(--c-ink-muted); }
+      .toc { border: 1px solid var(--c-line); background: var(--c-surface); padding: 1.25rem; margin-bottom: 3rem; }
+      .toc .preco { margin: 0; font-size: 1.5rem; }
+      .preco-m2 { margin: .35rem 0 0; color: var(--c-ink-muted); font-size: .9rem; }
+      .botao { display: inline-block; margin-top: 1rem; padding: .7rem 1.1rem; background: var(--c-primary); color: var(--c-on-primary); text-decoration: none; font-size: .9rem; letter-spacing: .04em; }
+      .fotos { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); list-style: none; padding: 0; margin: 0; }
+      .fotos figure { margin: 0; }
+      .fotos img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: 1px solid var(--c-line); }
+      .fotos figcaption { margin: .35rem 0 0; color: var(--c-ink-muted); font-size: .85rem; }
+      .ficha { display: grid; gap: .75rem 2rem; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); margin: 0; }
+      .ficha div { border-top: 1px solid var(--c-line); padding-top: .5rem; }
+      .ficha dt { font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--c-brass-text); }
+      .ficha dd { margin: .2rem 0 0; font-size: 1.05rem; }
+      .voltar { margin: 1.5rem 0 0; }
       .rodape { background: var(--c-night); color: var(--c-night-ink); padding: 2rem 1.5rem; }
       .rodape p { max-width: 68rem; margin: 0 auto .5rem; }
       .rodape a { color: var(--c-night-ink); }

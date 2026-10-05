@@ -17,3 +17,13 @@ export function precoParaTela(preco: PrecoVo | null): string | null {
 
   return `${SIMBOLO_POR_MOEDA[preco.moeda]} ${milhar},${casas}`;
 }
+
+// Área trafega como texto decimal com ponto; na tela vira vírgula e unidade.
+export function areaParaTela(area: string | null): string | null {
+  if (area === null || area.trim() === '') return null;
+
+  const [inteiro, decimais] = area.split('.');
+  const casas = decimais ? decimais.padEnd(2, '0').slice(0, 2) : '00';
+
+  return `${inteiro ?? '0'},${casas} m²`;
+}

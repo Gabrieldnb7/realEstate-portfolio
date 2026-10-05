@@ -36,6 +36,15 @@ export function textoDoRodape(): ReturnType<typeof textoDaPagina>['campos'] {
   return textoDaPagina('rodape').campos;
 }
 
+// O que toda página pública leva: título da aba, rodapé editável e o aviso obrigatório.
+export function baseDaPaginaPublica(tituloPagina: string) {
+  return {
+    tituloPagina,
+    rodape: textoDoRodape(),
+    aviso: AVISO_DE_PROJETO,
+  };
+}
+
 export async function rotasSite(app: FastifyInstance): Promise<void> {
   app.get('/', async (_request: FastifyRequest, reply: FastifyReply) => {
     const destaques = listarImoveisDoSite(PARAMETROS_PADRAO).itens.slice(0, TOTAL_DE_DESTAQUES);
@@ -43,10 +52,8 @@ export async function rotasSite(app: FastifyInstance): Promise<void> {
     return reply.view(
       'site/inicio.eta',
       {
-        tituloPagina: 'Início',
+        ...baseDaPaginaPublica('Início'),
         texto: textoDaPagina('inicio').campos,
-        rodape: textoDoRodape(),
-        aviso: AVISO_DE_PROJETO,
         pracas: PRACAS,
         cartoes: cartoesDoSite(destaques),
       },
