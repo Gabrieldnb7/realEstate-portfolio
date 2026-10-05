@@ -1,0 +1,43 @@
+<section class="abertura">
+  <h1>Imóveis do portfólio</h1>
+  <p class="chamada">Filtre pela praça e pela ordem que interessam. A seleção fica no endereço, então
+    a página volta igual depois de recarregar.</p>
+</section>
+
+<nav class="filtros">
+  <div class="filtro">
+    <h2>Praça</h2>
+    <ul class="opcoes">
+      <% it.filtros.pracas.forEach(function (opcao) { %>
+        <li>
+          <% if (opcao.ativa) { %><span class="ativa" aria-current="page"><%= opcao.rotulo %></span><% } else { %><a href="<%= opcao.url %>"><%= opcao.rotulo %></a><% } %>
+        </li>
+      <% }); %>
+    </ul>
+  </div>
+
+  <div class="filtro">
+    <h2>Ordem</h2>
+    <ul class="opcoes">
+      <% it.filtros.ordens.forEach(function (opcao) { %>
+        <li>
+          <% if (opcao.ativa) { %><span class="ativa" aria-current="page"><%= opcao.rotulo %></span><% } else { %><a href="<%= opcao.url %>"><%= opcao.rotulo %></a><% } %>
+        </li>
+      <% }); %>
+    </ul>
+  </div>
+</nav>
+
+<section>
+  <p class="contagem"><%= it.rotuloTotal %></p>
+
+  <% if (it.cartoes.length === 0) { %>
+    <p class="vazio">Nenhum imóvel nesta seleção. <a href="<%= it.urlCatalogoInteiro %>">Ver o catálogo inteiro</a>.</p>
+  <% } else { %>
+    <ul class="cartoes">
+      <% it.cartoes.forEach(function (cartao) { %>
+        <li><%~ include('./cartao.eta', { cartao: cartao }) %></li>
+      <% }); %>
+    </ul>
+  <% } %>
+</section>

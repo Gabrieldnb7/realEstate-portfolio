@@ -10,6 +10,14 @@ export const SITUACOES_VALIDAS: readonly SituacaoImovel[] = [
   'arquivado',
 ] as const;
 
+// O que existe no painel não é o que vai ao ar. Rascunho e arquivado ficam fora do site público;
+// reservado e vendido continuam no catálogo, com o selo da situação.
+export const SITUACOES_VISIVEIS_NO_SITE: readonly SituacaoImovel[] = [
+  'publicado',
+  'reservado',
+  'vendido',
+] as const;
+
 export function validarTransicaoSituacao(
   situacaoAtual: SituacaoImovel,
   novaSituacao: SituacaoImovel,

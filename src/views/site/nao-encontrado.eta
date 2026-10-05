@@ -1,0 +1,13 @@
+<section class="abertura">
+  <h1>Endereço não encontrado</h1>
+  <p class="chamada">Esta página não existe. Um imóvel em rascunho ou arquivado também sai do ar sem
+    deixar endereço.</p>
+</section>
+
+<section>
+  <h2>Continue navegando</h2>
+  <ul class="opcoes">
+    <li><a href="/imoveis">Ver todos os imóveis</a></li>
+    <li><a href="/">Início</a></li>
+  </ul>
+</section>

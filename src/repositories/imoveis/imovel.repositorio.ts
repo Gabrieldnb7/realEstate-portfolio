@@ -2,7 +2,13 @@
 // A leitura devolve registros (rascunho pode estar incompleto); a escrita só acontece a
 // partir do agregado Imovel, que já passou pelas regras do catálogo.
 import { conectarBanco } from '../../infra/db.js';
-import { Apartamento, Estate, Penthouse, Villa } from '../../entities/index.js';
+import {
+  Apartamento,
+  Estate,
+  Penthouse,
+  SITUACOES_VISIVEIS_NO_SITE,
+  Villa,
+} from '../../entities/index.js';
 import type { Imovel, SituacaoImovel, Tipologia } from '../../entities/index.js';
 import type { Praca, PrecoVo } from '../../entities/index.js';
 
@@ -82,7 +88,52 @@ interface LinhaImovel {
   atualizado_em: string;
 }
 
-function precoDaLinha(linha: LinhaImovel): PrecoVo | null {
+export interface CapaDoCatalogo {
+  url: string;
+  alt: string;
+}
+
+export interface ItemCatalogo {
+  ref: string;
+  slug: string;
+  titulo: string;
+  tipologia: Tipologia;
+  situacao: SituacaoImovel;
+  pais: Praca;
+  cidade: string;
+  bairro: string;
+  preco: PrecoVo | null;
+  capa: CapaDoCatalogo | null;
+}
+
+export type OrdenacaoCatalogo = 'recentes' | 'preco_asc' | 'preco_desc';
+
+export interface FiltrosCatalogo {
+  pais: Praca | null;
+  ordenar: OrdenacaoCatalogo;
+}
+
+interface LinhaCatalogo {
+  ref: string;
+  slug: string;
+  titulo: string;
+  tipologia: string;
+  situacao: string;
+  pais: string;
+  cidade: string;
+  bairro: string;
+  preco_valor: string | null;
+  preco_moeda: string | null;
+  capa_url: string | null;
+  capa_alt: string | null;
+}
+
+interface LinhaPrecos {
+  preco_valor: string | null;
+  preco_moeda: string | null;
+}
+
+function precoDaLinha(linha: LinhaPrecos): PrecoVo | null {
   if (linha.preco_valor === null || linha.preco_moeda === null) return null;
   return { valor: linha.preco_valor, moeda: linha.preco_moeda as PrecoVo['moeda'] };
 }
@@ -158,6 +209,56 @@ export function listarResumos(): ResumoPainel[] {
     atualizadoEm: linha.atualizado_em,
     totalFotos: linha.total_fotos,
     fotosSemDescricao: linha.fotos_sem_descricao ?? 0,
+  }));
+}
+
+// O ORDER BY sai de uma lista fechada: o valor do parâmetro nunca vira trecho de SQL.
+// O CASE manda preço sem valor para o fim da lista nos dois sentidos.
+const ORDENACAO_POR_PARAMETRO: Record<OrdenacaoCatalogo, string> = {
+  recentes: 'i.criado_em DESC, i.ref ASC',
+  preco_asc:
+    'CASE WHEN i.preco_valor IS NULL THEN 1 ELSE 0 END, CAST(i.preco_valor AS REAL) ASC, i.ref ASC',
+  preco_desc:
+    'CASE WHEN i.preco_valor IS NULL THEN 1 ELSE 0 END, CAST(i.preco_valor AS REAL) DESC, i.ref ASC',
+};
+
+export function listarParaCatalogo(filtros: FiltrosCatalogo): ItemCatalogo[] {
+  const condicoes = [`i.situacao IN (${SITUACOES_VISIVEIS_NO_SITE.map(() => '?').join(', ')})`];
+  const valores: string[] = [...SITUACOES_VISIVEIS_NO_SITE];
+
+  if (filtros.pais) {
+    condicoes.push('i.pais = ?');
+    valores.push(filtros.pais);
+  }
+
+  const linhas = conectarBanco()
+    .prepare(
+      `SELECT i.ref, i.slug, i.titulo, i.tipologia, i.situacao, i.pais, i.cidade, i.bairro,
+              i.preco_valor, i.preco_moeda,
+              (SELECT g.url FROM imagens g WHERE g.imovel_id = i.id
+                ORDER BY g.ordem ASC, g.id ASC LIMIT 1) AS capa_url,
+              (SELECT g.alt FROM imagens g WHERE g.imovel_id = i.id
+                ORDER BY g.ordem ASC, g.id ASC LIMIT 1) AS capa_alt
+       FROM imoveis i
+       WHERE ${condicoes.join(' AND ')}
+       ORDER BY ${ORDENACAO_POR_PARAMETRO[filtros.ordenar]}`
+    )
+    .all(...valores) as LinhaCatalogo[];
+
+  return linhas.map((linha) => ({
+    ref: linha.ref,
+    slug: linha.slug,
+    titulo: linha.titulo,
+    tipologia: linha.tipologia as Tipologia,
+    situacao: linha.situacao as SituacaoImovel,
+    pais: linha.pais as Praca,
+    cidade: linha.cidade,
+    bairro: linha.bairro,
+    preco: precoDaLinha(linha),
+    capa:
+      linha.capa_url === null
+        ? null
+        : { url: linha.capa_url, alt: linha.capa_alt ?? '' },
   }));
 }
 

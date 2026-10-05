@@ -18,7 +18,22 @@
       <li>
         <h3><%= praca.nome %></h3>
         <p><%= praca.cidades %></p>
+        <p><a href="<%= praca.url %>"><%= praca.chamada %></a></p>
       </li>
     <% }); %>
   </ul>
+</section>
+
+<section>
+  <h2>Em destaque</h2>
+  <% if (it.cartoes.length === 0) { %>
+    <p class="vazio">Nenhum imóvel publicado até agora.</p>
+  <% } else { %>
+    <ul class="cartoes">
+      <% it.cartoes.forEach(function (cartao) { %>
+        <li><%~ include('./cartao.eta', { cartao: cartao }) %></li>
+      <% }); %>
+    </ul>
+  <% } %>
+  <p class="ver-tudo"><a href="/imoveis">Ver todos os imóveis</a></p>
 </section>

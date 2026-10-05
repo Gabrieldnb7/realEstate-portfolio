@@ -16,8 +16,9 @@ import { rotasTextosAdmin } from './modules/admin/textos.rotas.js';
 import { rotasAutenticacao } from './modules/auth/auth.rotas.js';
 import { rotasPaginaLogin } from './modules/auth/login.rotas.js';
 import { registrarProtecaoPainel } from './repositories/seguranca/hooks.js';
+import { rotasCatalogo } from './routes/catalogo.rotas.js';
 import { rotasMidia } from './routes/media.js';
-import { rotasSite } from './routes/site.js';
+import { AVISO_DE_PROJETO, rotasSite, textoDoRodape } from './routes/site.js';
 import { saudeRoutes } from './routes/saude.js';
 
 export async function buildApp() {
@@ -82,6 +83,7 @@ export async function buildApp() {
 
   app.register(saudeRoutes);
   app.register(rotasSite);
+  app.register(rotasCatalogo);
   app.register(rotasMidia);
   app.register(rotasAutenticacao);
   app.register(rotasPaginaLogin);
@@ -89,6 +91,25 @@ export async function buildApp() {
   app.register(rotasTextosAdmin);
   app.register(rotasFotosImovel);
   app.register(rotasPainel);
+
+  // 404 amigável: JSON no contrato para a API, página para quem navega. O handler precisa nascer
+  // na raiz porque o handler de um plugin só cobre as rotas daquele plugin.
+  app.setNotFoundHandler((request, reply) => {
+    const caminho = request.url.split('?')[0] ?? request.url;
+    if (caminho.startsWith('/api/')) {
+      return reply.status(404).send({ erro: 'rota_nao_encontrada' });
+    }
+
+    return reply.status(404).view(
+      'site/nao-encontrado.eta',
+      {
+        tituloPagina: 'Não encontrado',
+        rodape: textoDoRodape(),
+        aviso: AVISO_DE_PROJETO,
+      },
+      { layout: 'site/layout.eta' }
+    );
+  });
 
   return app;
 }

@@ -51,6 +51,25 @@
       .pracas li { background: var(--c-surface); border: 1px solid var(--c-line); padding: 1rem; }
       .pracas h3 { margin: 0 0 .25rem; font-size: 1rem; }
       .pracas p { margin: 0; color: var(--c-ink-muted); font-size: .9rem; }
+      .filtros { display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 2rem; }
+      .filtro h2 { margin-bottom: .5rem; }
+      .opcoes { display: flex; flex-wrap: wrap; gap: .5rem; list-style: none; padding: 0; margin: 0; }
+      .opcoes li { border: 1px solid var(--c-line); background: var(--c-surface); }
+      .opcoes a, .opcoes .ativa { display: block; padding: .4rem .75rem; font-size: .9rem; color: var(--c-ink); text-decoration: none; }
+      .opcoes .ativa { background: var(--c-primary); border-color: var(--c-primary); color: var(--c-on-primary); }
+      .contagem { margin: 0 0 1rem; color: var(--c-ink-muted); }
+      .vazio { color: var(--c-ink-muted); }
+      .cartoes { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); list-style: none; padding: 0; margin: 0 0 1.5rem; }
+      .cartoes li { min-width: 0; }
+      .cartao { display: block; background: var(--c-surface); border: 1px solid var(--c-line); color: var(--c-ink); text-decoration: none; }
+      .cartao img, .sem-foto { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+      .sem-foto { background: var(--c-paper); color: var(--c-ink-muted); font-size: .875rem; place-items: center; }
+      .cartao-corpo { display: block; padding: 1rem; }
+      .cartao h3 { margin: 0 0 .25rem; font-family: Georgia, serif; font-size: 1.05rem; }
+      .local { margin: 0; color: var(--c-ink-muted); font-size: .9rem; }
+      .preco { margin: .5rem 0 0; color: var(--c-brass-text); font-weight: 600; }
+      .selo { display: inline-block; margin: .5rem 0 0; padding: .2rem .5rem; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; background: var(--c-primary); color: var(--c-on-primary); }
+      .ver-tudo { margin: 0; }
       .rodape { background: var(--c-night); color: var(--c-night-ink); padding: 2rem 1.5rem; }
       .rodape p { max-width: 68rem; margin: 0 auto .5rem; }
       .rodape a { color: var(--c-night-ink); }
@@ -62,6 +81,7 @@
       <p class="marca">+55Hub Corporate Group</p>
       <nav>
         <a href="/">Início</a>
+        <a href="/imoveis">Imóveis</a>
         <a href="/admin">Painel</a>
       </nav>
     </header>

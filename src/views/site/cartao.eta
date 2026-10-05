@@ -1,0 +1,13 @@
+<a class="cartao" href="<%= it.cartao.url %>">
+  <% if (it.cartao.capa) { %>
+    <img src="<%= it.cartao.capa.url %>" alt="<%= it.cartao.capa.alt %>" loading="lazy" />
+  <% } else { %>
+    <span class="sem-foto">Sem foto no ar</span>
+  <% } %>
+  <span class="cartao-corpo">
+    <h3><%= it.cartao.titulo %></h3>
+    <p class="local"><%= it.cartao.local %></p>
+    <% if (it.cartao.preco) { %><p class="preco"><%= it.cartao.preco %></p><% } %>
+    <% if (it.cartao.selo) { %><p class="selo"><%= it.cartao.selo %></p><% } %>
+  </span>
+</a>

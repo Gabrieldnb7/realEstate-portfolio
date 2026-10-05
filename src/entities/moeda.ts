@@ -1,6 +1,8 @@
 export type Praca = 'BR' | 'PA' | 'AE';
 export type Moeda = 'BRL' | 'USD' | 'AED';
 
+export const PRACAS_VALIDAS: readonly Praca[] = ['BR', 'PA', 'AE'] as const;
+
 export const MOEDA_POR_PRACA: Record<Praca, Moeda> = {
   BR: 'BRL',
   PA: 'USD',
