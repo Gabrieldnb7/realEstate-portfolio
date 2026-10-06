@@ -1,0 +1,894 @@
+/*
+  Painel administrativo · identidade "Pedra e Latão" na variante clara, a mesma das páginas
+  públicas (Anexo B). O enunciado não impõe critério visual ao painel, então ele toma emprestada
+  a estrutura do protótipo de referência (coluna lateral de filtros, indicadores no topo, bloco de
+  detalhamento em tabela) e pinta tudo com as tokens do Anexo B. Nada aqui é valor solto: medida,
+  raio e tom nascem nomeados em :root e só consomem tokens.
+*/
+
+:root {
+  /* Medidas que o Anexo B não publica; ficam nomeadas aqui. */
+  --largura-lateral: 19rem;
+  --raio-bloco: var(--sp-2);
+  --raio-campo: var(--sp-1);
+  --borda-fina: 1px;
+  --foco-largura: 3px;
+  --foco-afaste: var(--sp-1);
+  --foco-halo: var(--sp-1);
+  --altura-alvo: var(--sp-8);
+  --altura-miniatura: 7rem;
+  --largura-miniatura: 11rem;
+  --peso-titulo: 400;
+  --peso-valor: 500;
+  --peso-rotulo: 600;
+  --peso-forte: 600;
+  --tempo-suave: 180ms;
+
+  /* Filetes e realces sobre o papel: tinta do Anexo B diluída, nunca cor nova. */
+  --linha-suave: var(--c-line);
+  --linha-forte: var(--c-border-strong);
+  --relevo-suave: color-mix(in srgb, var(--c-ink) 5%, transparent);
+  --relevo-medio: color-mix(in srgb, var(--c-ink) 9%, transparent);
+
+  /* Tom por situação: os semânticos do Anexo B, publicados para o fundo claro. */
+  --tom-publicado: var(--c-success);
+  --tom-rascunho: var(--c-warning);
+  --tom-reservado: var(--c-info);
+  --tom-vendido: var(--c-error);
+  --tom-arquivado: var(--c-ink-muted);
+  --tom-acentos: var(--c-brass-text);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--c-paper);
+  color: var(--c-ink);
+  font-family: var(--font-text);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  overflow-wrap: break-word;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--c-brass-text);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: var(--peso-titulo);
+  margin: 0;
+  letter-spacing: var(--tracking-h2);
+}
+
+p {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:focus-visible {
+  outline: var(--foco-largura) solid var(--c-night-brass);
+  outline-offset: var(--foco-afaste);
+  /* O anel de latão some no papel claro; o halo escuro o separa do fundo. */
+  box-shadow: 0 0 0 var(--foco-halo) var(--c-primary);
+}
+
+/* Moldura · coluna lateral + área de conteúdo */
+.painel-app {
+  display: flex;
+  min-height: 100dvh;
+  align-items: stretch;
+}
+
+.painel-lateral {
+  flex: 0 0 var(--largura-lateral);
+  background: var(--c-surface);
+  border-right: var(--borda-fina) solid var(--linha-forte);
+  padding: var(--sp-5) var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.marca-lateral {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.marca-selo {
+  width: var(--altura-alvo);
+  height: var(--altura-alvo);
+  border-radius: var(--raio-bloco);
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+}
+
+.marca-nome {
+  font-size: var(--fs-small);
+  font-weight: var(--peso-forte);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--c-brass-text);
+}
+
+.navegacao-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.aba {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--raio-campo);
+  border-left: var(--foco-largura) solid transparent;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  transition: background-color var(--tempo-suave) ease-out, border-color var(--tempo-suave) ease-out;
+}
+
+.aba:hover {
+  background: var(--relevo-suave);
+  color: var(--c-ink);
+}
+
+.aba-ativa {
+  background: var(--c-primary);
+  border-left-color: var(--c-primary);
+  color: var(--c-on-primary);
+  font-weight: var(--peso-rotulo);
+}
+
+/* Filtros do bloco de detalhamento, no mesmo espírito da coluna do protótipo */
+.filtro-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding-top: var(--sp-4);
+  border-top: var(--borda-fina) solid var(--linha-suave);
+}
+
+.filtro-titulo {
+  font-size: var(--fs-overline);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--c-ink-muted);
+  font-weight: var(--peso-rotulo);
+}
+
+.filtro-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.filtro-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--raio-campo);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  transition: background-color var(--tempo-suave) ease-out;
+}
+
+.filtro-item:hover {
+  background: var(--relevo-suave);
+  color: var(--c-ink);
+}
+
+.filtro-item-ativo {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  font-weight: var(--peso-rotulo);
+}
+
+.filtro-valor {
+  overflow-wrap: anywhere;
+}
+
+.filtro-quantidade {
+  flex: 0 0 auto;
+  padding: 0 var(--sp-2);
+  border-radius: var(--altura-alvo);
+  background: var(--relevo-medio);
+  color: var(--c-ink-muted);
+  font-size: var(--fs-overline);
+  font-variant-numeric: tabular-nums;
+}
+
+.filtro-item-ativo .filtro-quantidade {
+  background: color-mix(in srgb, var(--c-on-primary) 24%, transparent);
+  color: var(--c-on-primary);
+}
+
+.filtro-limpar {
+  margin-top: var(--sp-2);
+}
+
+.pe-lateral {
+  margin-top: auto;
+  padding-top: var(--sp-4);
+  border-top: var(--borda-fina) solid var(--linha-suave);
+  color: var(--c-ink-muted);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.painel-conteudo {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-5) var(--sp-6) var(--sp-7);
+  gap: var(--sp-5);
+}
+
+.topo-painel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+
+/* "Início do site" e "Sair", lado a lado no canto direito do topo */
+.acoes-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.acoes-topo form {
+  margin: 0;
+}
+
+.titulo-pagina {
+  font-size: var(--fs-h2);
+  line-height: var(--lh-h2);
+  letter-spacing: var(--tracking-h2);
+}
+
+.subtitulo-pagina {
+  color: var(--c-ink-muted);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  margin-top: var(--sp-1);
+}
+
+.area-principal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.rodape-painel {
+  margin-top: auto;
+  padding-top: var(--sp-5);
+  border-top: var(--borda-fina) solid var(--linha-suave);
+  color: var(--c-ink-muted);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+/* Recados do PRG */
+.mensagens {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.mensagem {
+  padding: var(--sp-3);
+  border-radius: var(--raio-campo);
+  border: var(--borda-fina) solid var(--linha-suave);
+  border-left: var(--foco-largura) solid var(--c-primary);
+  background: var(--c-surface);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+.mensagem-erro {
+  border-left-color: var(--tom-vendido);
+}
+
+/* Indicadores do topo (KPI do protótipo) */
+.indicadores-lista {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+
+.indicador {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  border: var(--borda-fina) solid var(--linha-suave);
+  border-radius: var(--raio-bloco);
+  transition: border-color var(--tempo-suave) ease-out;
+}
+
+.indicador:hover {
+  border-color: var(--linha-forte);
+}
+
+.indicador-marca {
+  flex: 0 0 auto;
+  width: var(--sp-2);
+  height: var(--altura-alvo);
+  border-radius: var(--raio-campo);
+  background: var(--tom-acentos);
+}
+
+.indicador-dados {
+  display: flex;
+  flex-direction: column;
+}
+
+.indicador-rotulo {
+  color: var(--c-ink-muted);
+  font-size: var(--fs-overline);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  font-weight: var(--peso-rotulo);
+}
+
+.indicador-valor {
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-h2);
+  font-variant-numeric: tabular-nums;
+}
+
+.indicador-total .indicador-marca {
+  background: var(--c-brass-text);
+}
+
+.indicador-publicados .indicador-marca {
+  background: var(--tom-publicado);
+}
+
+.indicador-rascunhos .indicador-marca {
+  background: var(--tom-rascunho);
+}
+
+.indicador-fora .indicador-marca {
+  background: var(--tom-vendido);
+}
+
+/* Bloco de detalhamento: cabeçalho com busca, tabela, estado vazio e rodapé de contagem */
+.detalhamento {
+  background: var(--c-surface);
+  border: var(--borda-fina) solid var(--linha-suave);
+  border-radius: var(--raio-bloco);
+  overflow: hidden;
+}
+
+.cabecalho-bloco {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: var(--borda-fina) solid var(--linha-suave);
+}
+
+.cabecalho-titulo {
+  font-size: var(--fs-h3);
+  line-height: var(--lh-h3);
+}
+
+.cabecalho-subtitulo {
+  color: var(--c-ink-muted);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  margin-top: var(--sp-1);
+}
+
+.campo-busca {
+  flex: 1 1 18rem;
+  max-width: 26rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.campo-busca-label {
+  flex: 1 1 100%;
+  font-size: var(--fs-overline);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--c-ink-muted);
+  font-weight: var(--peso-rotulo);
+}
+
+.corpo-tabela {
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  text-align: left;
+}
+
+.tabela th {
+  padding: var(--sp-3) var(--sp-4);
+  color: var(--c-ink-muted);
+  font-size: var(--fs-overline);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  font-weight: var(--peso-rotulo);
+  border-bottom: var(--borda-fina) solid var(--linha-forte);
+  background: var(--c-paper);
+  white-space: nowrap;
+}
+
+.tabela td {
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: var(--borda-fina) solid var(--linha-suave);
+  vertical-align: top;
+}
+
+.tabela tbody tr {
+  transition: background-color var(--tempo-suave) ease-out;
+}
+
+.tabela tbody tr:hover {
+  background: var(--relevo-suave);
+}
+
+.tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.coluna-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.celula-ref {
+  font-weight: var(--peso-forte);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.celula-acao {
+  white-space: nowrap;
+}
+
+/* Selos de tipologia e situação, no padrão de etiqueta do protótipo */
+.selo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--raio-campo);
+  font-size: var(--fs-overline);
+  font-weight: var(--peso-rotulo);
+  line-height: var(--lh-small);
+  background: var(--relevo-medio);
+  color: var(--c-ink);
+}
+
+.selo-tipologia {
+  color: var(--c-brass-text);
+}
+
+.selo-alerta {
+  color: var(--tom-rascunho);
+}
+
+.selo-situacao {
+  background: transparent;
+  padding-left: 0;
+}
+
+.ponto-situacao {
+  width: var(--sp-2);
+  height: var(--sp-2);
+  border-radius: 50%;
+  background: var(--tom-arquivado);
+}
+
+.situacao-publicado {
+  color: var(--tom-publicado);
+}
+
+.situacao-publicado .ponto-situacao {
+  background: var(--tom-publicado);
+}
+
+.situacao-rascunho {
+  color: var(--tom-rascunho);
+}
+
+.situacao-rascunho .ponto-situacao {
+  background: var(--tom-rascunho);
+}
+
+.situacao-reservado {
+  color: var(--tom-reservado);
+}
+
+.situacao-reservado .ponto-situacao {
+  background: var(--tom-reservado);
+}
+
+.situacao-vendido {
+  color: var(--tom-vendido);
+}
+
+.situacao-vendido .ponto-situacao {
+  background: var(--tom-vendido);
+}
+
+.situacao-arquivado {
+  color: var(--tom-arquivado);
+}
+
+.situacao-arquivado .ponto-situacao {
+  background: var(--tom-arquivado);
+}
+
+/* Estado vazio e rodapé de contagem */
+.estado-vazio {
+  padding: var(--sp-7) var(--sp-5);
+  text-align: center;
+  color: var(--c-ink-muted);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  align-items: center;
+}
+
+.estado-vazio-titulo {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-h3);
+  color: var(--c-ink);
+}
+
+.rodape-bloco {
+  padding: var(--sp-3) var(--sp-5);
+  border-top: var(--borda-fina) solid var(--linha-suave);
+  color: var(--c-ink-muted);
+  font-size: var(--fs-overline);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Botões e links de ação */
+.botao,
+.acoes a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-height: var(--altura-alvo);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--raio-campo);
+  border: var(--borda-fina) solid var(--linha-forte);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  cursor: pointer;
+  transition: transform var(--tempo-suave) ease-out, opacity var(--tempo-suave) ease-out;
+}
+
+.botao:hover,
+.botao:focus-visible,
+.acoes a:hover,
+.acoes a:focus-visible {
+  transform: translateY(calc(var(--sp-1) * -1));
+  color: var(--c-ink);
+}
+
+.botao-primario {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: var(--c-on-primary);
+  font-weight: var(--peso-rotulo);
+}
+
+.botao-perigo {
+  background: transparent;
+  border-color: var(--tom-vendido);
+  color: var(--tom-vendido);
+}
+
+.bloco-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  align-items: center;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.acoes form {
+  margin: 0;
+}
+
+/* Formulários do painel */
+.bloco-form {
+  background: var(--c-surface);
+  border: var(--borda-fina) solid var(--linha-suave);
+  border-radius: var(--raio-bloco);
+  padding: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.bloco-form fieldset {
+  border: var(--borda-fina) solid var(--linha-suave);
+  border-radius: var(--raio-campo);
+  padding: var(--sp-4);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.bloco-form legend {
+  padding: 0 var(--sp-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-h3);
+  color: var(--c-brass-text);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  font-size: var(--fs-small);
+  color: var(--c-ink-muted);
+  font-weight: var(--peso-rotulo);
+}
+
+.campo input,
+.campo select,
+.campo textarea,
+.campo-busca input {
+  font: inherit;
+  color: var(--c-ink);
+  background: var(--c-paper);
+  border: var(--borda-fina) solid var(--linha-forte);
+  border-radius: var(--raio-campo);
+  padding: var(--sp-2) var(--sp-3);
+  width: 100%;
+  transition: border-color var(--tempo-suave) ease-out, background-color var(--tempo-suave) ease-out;
+}
+
+.campo textarea {
+  min-height: var(--sp-9);
+  line-height: var(--lh-body);
+}
+
+.campo input:hover,
+.campo select:hover,
+.campo textarea:hover,
+.campo-busca input:hover {
+  background: var(--c-surface);
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus,
+.campo-busca input:focus {
+  background: var(--c-surface);
+  border-color: var(--c-primary);
+}
+
+.grade-campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+}
+
+.grade-campos > * {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.erro-campo,
+.erro-bloco {
+  color: var(--tom-vendido);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+.resumo-erros {
+  border: var(--borda-fina) solid var(--tom-vendido);
+  border-radius: var(--raio-campo);
+  padding: var(--sp-3) var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.resumo-erros li {
+  color: var(--tom-vendido);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+.ajuda {
+  color: var(--c-ink-muted);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+/* Troca de tipologia por link, como o catálogo faz na ordenação */
+.atalhos-tipologia {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.atalho-tipologia-ativo {
+  color: var(--c-brass-text);
+  font-weight: var(--peso-forte);
+}
+
+/* Galeria de fotos dentro do formulário */
+.grade-fotos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+}
+
+.item-foto {
+  width: var(--largura-miniatura);
+  background: var(--c-paper);
+  border: var(--borda-fina) solid var(--linha-suave);
+  border-radius: var(--raio-campo);
+  padding: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  font-size: var(--fs-overline);
+  color: var(--c-ink-muted);
+}
+
+.item-foto img {
+  width: 100%;
+  height: var(--altura-miniatura);
+  object-fit: cover;
+  border-radius: var(--raio-campo);
+}
+
+.selo-capa {
+  color: var(--c-brass-text);
+  font-weight: var(--peso-forte);
+}
+
+/* Dados resumidos de um imóvel, do lado do formulário */
+.resumo-dados {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: var(--sp-4);
+}
+
+.resumo-dados div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.resumo-dados dt,
+.resumo-dados span {
+  color: var(--c-ink-muted);
+  font-size: var(--fs-overline);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.resumo-dados dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Porta de entrada: mesmo vestido, sem a coluna lateral */
+.porta-painel {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-5);
+}
+
+.porta-cartao {
+  width: 100%;
+  max-width: 26rem;
+  background: var(--c-surface);
+  border: var(--borda-fina) solid var(--linha-forte);
+  border-radius: var(--raio-bloco);
+  padding: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.porta-aviso {
+  color: var(--c-ink-muted);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+@media (max-width: 60rem) {
+  .painel-app {
+    flex-direction: column;
+  }
+
+  .painel-lateral {
+    flex: 0 0 auto;
+    border-right: none;
+    border-bottom: var(--borda-fina) solid var(--linha-forte);
+  }
+
+  .pe-lateral {
+    margin-top: 0;
+  }
+
+  .indicadores-lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .painel-conteudo {
+    padding: var(--sp-4);
+  }
+}

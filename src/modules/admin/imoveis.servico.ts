@@ -1,4 +1,4 @@
-// Casos de uso do painel sobre o catálogo: criar, editar e mudar a situação.
+// Casos de uso do painel sobre o catálogo: criar, editar, mudar a situação e excluir.
 // Ler o corpo é a fronteira: converte o que chegou em ficha completa e acumula um erro por
 // campo. As regras do catálogo continuam no domínio (src/entities).
 import { randomUUID } from 'node:crypto';
@@ -10,12 +10,14 @@ import {
   validarTransicaoSituacao,
 } from '../../entities/index.js';
 import type { ErroCampo, Praca, PrecoVo, SituacaoImovel, Tipologia } from '../../entities/index.js';
+import { apagarArquivoPelaUrl } from '../../infra/armazenamento/upload.js';
 import {
   atualizarImovel,
   buscarRegistro,
   existeReferencia,
   inserirImovel,
   listarResumos,
+  removerImovel,
   salvarSituacao,
   slugEmUso,
   temFotosValidasParaPublicacao,
@@ -366,12 +368,114 @@ export function mudarSituacaoDoImovel(id: string, corpo: unknown): ResultadoEscr
   return resultado(id, registro.ref, registro.slug, situacao);
 }
 
-export function listarParaPainel(): ResumoPainel[] {
-  return listarResumos();
-}
-
 export function registroParaFormulario(id: string): RegistroImovel {
   const registro = buscarRegistro(id);
   if (!registro) throw new ImovelNaoEncontradoError();
   return registro;
+}
+
+export interface ResultadoExclusao extends ResultadoEscrita {
+  fotosRemovidas: number;
+}
+
+/**
+ * Exclusão definitiva, a pedido de quem administra o catálogo. As imagens saem junto pela chave
+ * estrangeira com ON DELETE CASCADE; o arquivo do disco só é apagado depois que a linha saiu do
+ * banco, porque uma falha no meio não pode deixar imóvel sem foto nem foto sem imóvel.
+ */
+export function excluirImovelDoCatalogo(id: string): ResultadoExclusao {
+  const registro = buscarRegistro(id);
+  if (!registro) throw new ImovelNaoEncontradoError();
+
+  removerImovel(id);
+  for (const imagem of registro.imagens) apagarArquivoPelaUrl(imagem.url);
+
+  return {
+    ...resultado(id, registro.ref, registro.slug, registro.situacao),
+    fotosRemovidas: registro.imagens.length,
+  };
+}
+
+export type EixoFiltroPainel = 'situacao' | 'pais' | 'tipologia';
+
+export interface FiltrosPainel {
+  situacao: string;
+  pais: string;
+  tipologia: string;
+  busca: string;
+}
+
+interface OpcaoDeFiltro {
+  valor: string;
+  quantidade: number;
+}
+
+export interface PainelFiltrado {
+  resumos: ResumoPainel[];
+  total: number;
+  eixos: { chave: EixoFiltroPainel; rotulo: string; opcoes: OpcaoDeFiltro[] }[];
+  filtros: FiltrosPainel;
+  kpis: { total: number; publicados: number; rascunhos: number; foraDoAr: number };
+}
+
+// Só um valor conhecido entra no filtro: o que a URL trouxer de diferente é tratado como ausente.
+function valorValido<T extends string>(valor: string, opcoes: readonly T[]): string {
+  return opcoes.includes(valor as T) ? valor : '';
+}
+
+function contagemPor(expressao: (resumo: ResumoPainel) => string, resumos: ResumoPainel[]): OpcaoDeFiltro[] {
+  const quantidades = new Map<string, number>();
+  for (const resumo of resumos) {
+    const chave = expressao(resumo);
+    quantidades.set(chave, (quantidades.get(chave) ?? 0) + 1);
+  }
+
+  return [...quantidades.entries()]
+    .map(([valor, quantidade]) => ({ valor, quantidade }))
+    .sort((a, b) => b.quantidade - a.quantidade || a.valor.localeCompare(b.valor));
+}
+
+function combinar(resumos: ResumoPainel[], eixo: EixoFiltroPainel, valor: string): ResumoPainel[] {
+  if (valor === '') return resumos;
+  return resumos.filter((resumo) => String(resumo[eixo]) === valor);
+}
+
+/** O que a tela do painel mostra: a lista filtrada, as contagens por eixo e os indicadores do topo. */
+export function painelFiltrado(parametros: Partial<FiltrosPainel>): PainelFiltrado {
+  const todos = listarResumos();
+  const filtros: FiltrosPainel = {
+    situacao: valorValido(parametros.situacao ?? '', SITUACOES_VALIDAS),
+    pais: valorValido(parametros.pais ?? '', ['BR', 'PA', 'AE'] as Praca[]),
+    tipologia: valorValido(parametros.tipologia ?? '', TIPOLOGIAS_VALIDAS),
+    busca: (parametros.busca ?? '').trim().toLowerCase(),
+  };
+
+  const termo = filtros.busca;
+  const buscando = todos.filter((resumo) => {
+    if (termo === '') return true;
+    return [resumo.ref, resumo.titulo, resumo.cidade, resumo.bairro]
+      .some((valor) => valor.toLowerCase().includes(termo));
+  });
+
+  const visiveis = (['situacao', 'pais', 'tipologia'] as const).reduce(
+    (lista, eixo) => combinar(lista, eixo, filtros[eixo]),
+    buscando
+  );
+
+  return {
+    resumos: visiveis,
+    total: todos.length,
+    eixos: [
+      { chave: 'situacao', rotulo: 'Situação', opcoes: contagemPor((r) => r.situacao, buscando) },
+      { chave: 'pais', rotulo: 'Praça', opcoes: contagemPor((r) => r.pais, buscando) },
+      { chave: 'tipologia', rotulo: 'Tipologia', opcoes: contagemPor((r) => r.tipologia, buscando) },
+    ],
+    filtros,
+    kpis: {
+      total: visiveis.length,
+      publicados: visiveis.filter((r) => r.situacao === 'publicado').length,
+      rascunhos: visiveis.filter((r) => r.situacao === 'rascunho').length,
+      foraDoAr: visiveis.filter((r) => r.situacao === 'vendido' || r.situacao === 'arquivado').length,
+    },
+  };
 }

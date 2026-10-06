@@ -1,85 +1,124 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Imóveis do portfólio · Painel +55</title>
-    <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 64rem; line-height: 1.5; }
-      table { border-collapse: collapse; width: 100%; }
-      th, td { text-align: left; padding: .5rem; border-bottom: 1px solid #d9d2c7; vertical-align: top; }
-      nav { display: flex; gap: 1rem; align-items: center; }
-      .aviso { padding: .5rem; background: #eef3ea; }
-      .erro { color: #a3232a; }
-      .num { text-align: right; }
-    </style>
-  </head>
-  <body>
-    <header>
-      <nav>
-        <h1>Imóveis do portfólio</h1>
-        <a href="/admin/imoveis/novo">Novo imóvel</a>
-        <a href="/admin/textos">Textos do site</a>
-        <form method="post" action="/admin/logout">
-          <button type="submit">Sair</button>
-        </form>
-      </nav>
-      <p>Sessão de <%= it.nomeUsuario %>.</p>
+<section class="indicadores" aria-label="Indicadores do catálogo">
+  <ul class="indicadores-lista">
+    <li class="indicador indicador-total">
+      <span class="indicador-marca"></span>
+      <div class="indicador-dados">
+        <p class="indicador-rotulo">Imóveis listados</p>
+        <p class="indicador-valor"><%= it.indicadores.total %></p>
+      </div>
+    </li>
+    <li class="indicador indicador-publicados">
+      <span class="indicador-marca"></span>
+      <div class="indicador-dados">
+        <p class="indicador-rotulo">Publicados</p>
+        <p class="indicador-valor"><%= it.indicadores.publicados %></p>
+      </div>
+    </li>
+    <li class="indicador indicador-rascunhos">
+      <span class="indicador-marca"></span>
+      <div class="indicador-dados">
+        <p class="indicador-rotulo">Em rascunho</p>
+        <p class="indicador-valor"><%= it.indicadores.rascunhos %></p>
+      </div>
+    </li>
+    <li class="indicador indicador-fora">
+      <span class="indicador-marca"></span>
+      <div class="indicador-dados">
+        <p class="indicador-rotulo">Fora do ar</p>
+        <p class="indicador-valor"><%= it.indicadores.foraDoAr %></p>
+      </div>
+    </li>
+  </ul>
+</section>
 
-      <% if (it.feedback) { %><p class="aviso" role="status"><%= it.feedback %></p><% } %>
-      <% if (it.erro) { %><p class="erro" role="alert"><%= it.erro %></p><% } %>
-    </header>
+<section class="detalhamento" aria-label="Detalhamento dos imóveis">
+  <header class="cabecalho-bloco">
+    <div>
+      <h2 class="cabecalho-titulo">Detalhamento dos imóveis</h2>
+      <p class="cabecalho-subtitulo">Cada linha abre a edição e permite excluir o registro.</p>
+    </div>
 
-    <main>
-      <% if (it.resumos.length === 0) { %>
-        <p>Nenhum imóvel cadastrado. Comece por Novo imóvel.</p>
-      <% } else { %>
-        <table>
-          <thead>
+    <form class="campo-busca" method="get" action="/admin">
+      <label class="campo-busca-label" for="busca">Buscar por referência, título, cidade ou bairro</label>
+      <input id="busca" name="busca" type="search" value="<%= it.busca %>" placeholder="BR-0101" />
+      <% if (it.situacaoAtiva) { %><input type="hidden" name="situacao" value="<%= it.situacaoAtiva %>" /><% } %>
+      <% if (it.paisAtivo) { %><input type="hidden" name="pais" value="<%= it.paisAtivo %>" /><% } %>
+      <% if (it.tipologiaAtiva) { %><input type="hidden" name="tipologia" value="<%= it.tipologiaAtiva %>" /><% } %>
+      <button class="botao botao-primario" type="submit">Buscar</button>
+    </form>
+  </header>
+
+  <% if (it.linhas.length === 0) { %>
+    <div class="estado-vazio">
+      <p class="estado-vazio-titulo">
+        <% if (it.total === 0) { %>
+          Nenhum imóvel cadastrado
+        <% } else { %>
+          Nenhum imóvel atende aos filtros
+        <% } %>
+      </p>
+      <p>
+        <% if (it.total === 0) { %>
+          Comece por Novo imóvel.
+        <% } else { %>
+          <a href="<%= it.urlLimparFiltros %>">Limpar filtros</a> para ver a lista inteira.
+        <% } %>
+      </p>
+    </div>
+  <% } else { %>
+    <div class="corpo-tabela">
+      <table class="tabela">
+        <thead>
+          <tr>
+            <th scope="col">Referência</th>
+            <th scope="col">Imóvel</th>
+            <th scope="col">Praça</th>
+            <th scope="col">Preço</th>
+            <th scope="col" class="coluna-num">Fotos</th>
+            <th scope="col">Situação</th>
+            <th scope="col">Atualizado</th>
+            <th scope="col">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% it.linhas.forEach(function (imovel) { %>
             <tr>
-              <th>Referência</th>
-              <th>Título</th>
-              <th>Tipologia</th>
-              <th>Praça</th>
-              <th>Cidade e bairro</th>
-              <th class="num">Preço</th>
-              <th class="num">Fotos</th>
-              <th>Situação</th>
-              <th>Ação</th>
+              <td class="celula-ref"><%= imovel.ref %></td>
+              <td>
+                <strong><%= imovel.titulo %></strong>
+                <span class="selo selo-tipologia"><%= imovel.tipologia %></span>
+                <p class="ajuda"><%= imovel.cidade %> / <%= imovel.bairro %></p>
+              </td>
+              <td><%= imovel.pais %></td>
+              <td class="coluna-num"><%= imovel.preco %></td>
+              <td class="coluna-num">
+                <%= imovel.totalFotos %>
+                <% if (imovel.fotosSemDescricao > 0) { %>
+                  <span class="selo selo-alerta"><%= imovel.fotosSemDescricao %> sem descrição</span>
+                <% } %>
+              </td>
+              <td>
+                <span class="selo selo-situacao situacao-<%= imovel.situacao %>">
+                  <span class="ponto-situacao"></span><%= imovel.situacao %>
+                </span>
+              </td>
+              <td><%= imovel.atualizado %></td>
+              <td>
+                <span class="acoes">
+                  <a href="<%= imovel.urlEditar %>">Editar</a>
+                  <form method="post" action="<%= imovel.urlExcluir %>">
+                    <button class="botao botao-perigo" type="submit">Excluir</button>
+                  </form>
+                </span>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            <% it.resumos.forEach(function (imovel) { %>
-              <tr>
-                <td><%= imovel.ref %></td>
-                <td><%= imovel.titulo %></td>
-                <td><%= imovel.tipologia %></td>
-                <td><%= imovel.pais %></td>
-                <td><%= imovel.cidade %> / <%= imovel.bairro %></td>
-                <td class="num">
-                  <% if (imovel.preco) { %>
-                    <%= imovel.preco.valor %> <%= imovel.preco.moeda %>
-                  <% } else { %>
-                    a consultar
-                  <% } %>
-                </td>
-                <td class="num">
-                  <%= imovel.totalFotos %>
-                  <% if (imovel.fotosSemDescricao > 0) { %>
-                    (<%= imovel.fotosSemDescricao %> sem descrição)
-                  <% } %>
-                </td>
-                <td><%= imovel.situacao %></td>
-                <td><a href="/admin/imoveis/<%= imovel.id %>/editar">Editar</a></td>
-              </tr>
-            <% }); %>
-          </tbody>
-        </table>
-      <% } %>
-    </main>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
 
-    <footer>
-      <p>Projeto de avaliação técnica. Imóveis, valores e contatos fictícios.</p>
-    </footer>
-  </body>
-</html>
+  <footer class="rodape-bloco">
+    <p>Exibindo <%= it.linhas.length %> de <%= it.total %> imóveis.</p>
+  </footer>
+</section>

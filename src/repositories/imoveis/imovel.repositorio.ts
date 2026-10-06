@@ -390,6 +390,11 @@ export function salvarSituacao(id: string, situacao: SituacaoImovel, agora: stri
   );
 }
 
+// A exclusão é definitiva: as imagens caem junto pela chave estrangeira com ON DELETE CASCADE.
+export function removerImovel(id: string): void {
+  conectarBanco().prepare('DELETE FROM imoveis WHERE id = ?').run(id);
+}
+
 // Anexo C: só vai ao ar com pelo menos uma foto e com a descrição de todas as fotos.
 export function temFotosValidasParaPublicacao(imovelId: string): boolean {
   const contagem = conectarBanco()

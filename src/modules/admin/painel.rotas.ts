@@ -1,21 +1,24 @@
-// Páginas do painel: lista, formulário de imóvel e textos institucionais. O formulário envia
-// urlencoded e recebe 302 depois de gravar, então funciona com JavaScript desligado; as
+// Páginas do painel: lista, formulário de imóvel, exclusão e textos institucionais. O formulário
+// envia urlencoded e recebe 302 depois de gravar, então funciona com JavaScript desligado; as
 // validações são as mesmas da API.
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { DominioInvalidoError } from '../../entities/index.js';
 import type { ErroCampo, Tipologia } from '../../entities/index.js';
 import { FormatodeImagemInvalidoError } from '../../infra/armazenamento/upload.js';
 import { errosPorCampo, mensagemDoCampo } from '../../utils/mensagens.campos.js';
+import { linhasDoPainel } from '../../utils/linhas.painel.js';
 import { ArquivoGrandeDemaisError, lerUploadDeImagem } from './fotos.entrada.js';
 import { ImagemNaoEncontradaError, adicionarFoto, removerFoto } from './fotos.servico.js';
 import {
   ImovelNaoEncontradoError,
   atualizarImovelNoCatalogo,
   criarImovelNoCatalogo,
-  listarParaPainel,
+  excluirImovelDoCatalogo,
   mudarSituacaoDoImovel,
+  painelFiltrado,
   registroParaFormulario,
 } from './imoveis.servico.js';
+import type { EixoFiltroPainel, FiltrosPainel, PainelFiltrado } from './imoveis.servico.js';
 import type { RegistroImovel } from '../../repositories/imoveis/imovel.repositorio.js';
 import type { CamposTexto, ChaveTexto } from '../../repositories/textos/texto.repositorio.js';
 import {
@@ -33,8 +36,71 @@ const MENSAGENS_FEEDBACK: Record<string, string> = {
   situacao: 'Situação atualizada.',
   foto: 'Foto enviada.',
   foto_removida: 'Foto removida.',
+  excluido: 'Imóvel excluído.',
   texto: 'Texto gravado.',
 };
+
+// Toda tela do painel nasce dentro da mesma moldura: coluna lateral, topo e rodapé.
+const LAYOUT_PAINEL = 'admin/layout.eta';
+
+type AbaPainel = 'imoveis' | 'novo' | 'textos';
+
+interface GrupoFiltro {
+  rotulo: string;
+  opcoes: { rotulo: string; quantidade: number; url: string; ativa: boolean }[];
+}
+
+function basePainel(opcoes: {
+  tituloPagina: string;
+  subtitulo: string;
+  nomeUsuario: string;
+  abaAtiva: AbaPainel;
+  gruposFiltro?: GrupoFiltro[];
+  urlLimparFiltros?: string;
+  feedback?: string | null;
+  erro?: string | null;
+}) {
+  return {
+    tituloPagina: opcoes.tituloPagina,
+    subtitulo: opcoes.subtitulo,
+    nomeUsuario: opcoes.nomeUsuario,
+    abaAtiva: opcoes.abaAtiva,
+    gruposFiltro: opcoes.gruposFiltro ?? [],
+    urlLimparFiltros: opcoes.urlLimparFiltros ?? '/admin',
+    feedback: opcoes.feedback ?? null,
+    erro: opcoes.erro ?? null,
+  };
+}
+
+const EIXOS_DA_URL = ['situacao', 'pais', 'tipologia', 'busca'] as const;
+
+function urlDosFiltros(filtros: FiltrosPainel): string {
+  const parametros = new URLSearchParams();
+  for (const eixo of EIXOS_DA_URL) {
+    const valor = filtros[eixo];
+    if (valor !== '') parametros.set(eixo, valor);
+  }
+
+  const consulta = parametros.toString();
+  return consulta === '' ? '/admin' : `/admin?${consulta}`;
+}
+
+// O filtro é um link comum: clicar marca, clicar de novo desmarca, e a busca continua na URL.
+function urlDoFiltro(filtros: FiltrosPainel, eixo: EixoFiltroPainel, valor: string): string {
+  return urlDosFiltros({ ...filtros, [eixo]: filtros[eixo] === valor ? '' : valor });
+}
+
+function gruposDeFiltro(painel: PainelFiltrado): GrupoFiltro[] {
+  return painel.eixos.map((eixe) => ({
+    rotulo: eixe.rotulo,
+    opcoes: eixe.opcoes.map((opcao) => ({
+      rotulo: opcao.valor,
+      quantidade: opcao.quantidade,
+      ativa: painel.filtros[eixe.chave] === opcao.valor,
+      url: urlDoFiltro(painel.filtros, eixe.chave, opcao.valor),
+    })),
+  }));
+}
 
 // Os campos que a tela mostra; qualquer outro campo livre continua sendo gravado.
 const FORMULARIOS_DE_TEXTO: Record<
@@ -177,13 +243,22 @@ function contextoFormulario(opcoes: {
   registro?: RegistroImovel;
   acao: string;
   nomeUsuario: string;
-  titulo?: string;
+  tituloPagina?: string;
   erroFoto?: string | null;
+  feedback?: string | null;
 }) {
   const { registro } = opcoes;
 
   return {
-    titulo: opcoes.titulo ?? (registro ? `Editar ${registro.ref}` : 'Novo imóvel'),
+    ...basePainel({
+      tituloPagina: opcoes.tituloPagina ?? (registro ? `Editar ${registro.ref}` : 'Novo imóvel'),
+      subtitulo: registro
+        ? 'O que for salvo aqui aparece no site enquanto o imóvel estiver publicado.'
+        : 'Imóvel novo entra como rascunho.',
+      nomeUsuario: opcoes.nomeUsuario,
+      abaAtiva: registro ? 'imoveis' : 'novo',
+      feedback: opcoes.feedback ?? null,
+    }),
     acao: opcoes.acao,
     tipologia: opcoes.tipologia,
     tipologias: TIPOLOGIAS,
@@ -201,7 +276,6 @@ function contextoFormulario(opcoes: {
         }
       : null,
     erroFoto: opcoes.erroFoto ?? null,
-    nomeUsuario: opcoes.nomeUsuario,
   };
 }
 
@@ -209,22 +283,26 @@ function falhaDoFormulario(
   reply: FastifyReply,
   erro: unknown,
   request: FastifyRequest,
-  contexto: { acao: string; nomeUsuario: string; tipologia: Tipologia; titulo?: string }
+  contexto: { acao: string; nomeUsuario: string; tipologia: Tipologia; tituloPagina?: string }
 ): FastifyReply {
   if (erro instanceof DominioInvalidoError) {
     return reply
       .status(422)
-      .view('admin/imovel-form.eta', {
-        ...contextoFormulario({
-          tipologia: contexto.tipologia,
-          valores: valoresDoCorpo(corpoDaRequisicao(request)),
-          erros: errosPorCampo(erro.campos),
-          errosRestantes: errosDeResumo(erro.campos),
-          acao: contexto.acao,
-          nomeUsuario: contexto.nomeUsuario,
-          ...(contexto.titulo ? { titulo: contexto.titulo } : {}),
-        }),
-      });
+      .view(
+        'admin/imovel-form.eta',
+        {
+          ...contextoFormulario({
+            tipologia: contexto.tipologia,
+            valores: valoresDoCorpo(corpoDaRequisicao(request)),
+            erros: errosPorCampo(erro.campos),
+            errosRestantes: errosDeResumo(erro.campos),
+            acao: contexto.acao,
+            nomeUsuario: contexto.nomeUsuario,
+            ...(contexto.tituloPagina ? { tituloPagina: contexto.tituloPagina } : {}),
+          }),
+        },
+        { layout: LAYOUT_PAINEL }
+      );
   }
 
   if (erro instanceof ImovelNaoEncontradoError) {
@@ -248,9 +326,13 @@ function contextoTextos(opcoes: {
   const erros = opcoes.erros ?? {};
 
   return {
-    tituloPagina: 'Textos do site',
-    nomeUsuario: opcoes.nomeUsuario,
-    feedback: opcoes.feedback ?? null,
+    ...basePainel({
+      tituloPagina: 'Textos do site',
+      subtitulo: 'Frases da Início e do rodapé, sem tocar no código das páginas.',
+      nomeUsuario: opcoes.nomeUsuario,
+      abaAtiva: 'textos',
+      feedback: opcoes.feedback ?? null,
+    }),
     paginas: PAGINAS_COM_TEXTO.map((pagina) => ({
       pagina,
       rotulo: FORMULARIOS_DE_TEXTO[pagina].rotulo,
@@ -281,24 +363,50 @@ export async function rotasPainel(app: FastifyInstance): Promise<void> {
     const query = request.query as Record<string, unknown>;
     const chaveFeedback = texto(query['feito']);
     const chaveErro = texto(query['erro']);
-
-    return reply.view('admin/imoveis-lista.eta', {
-      resumos: listarParaPainel(),
-      feedback: MENSAGENS_FEEDBACK[chaveFeedback] ?? null,
-      erro: chaveErro ? mensagemDoCampo({ campo: 'situacao', codigo: chaveErro }) : null,
-      nomeUsuario: nomeQuemUsa(request),
+    const painel = painelFiltrado({
+      situacao: texto(query['situacao']),
+      pais: texto(query['pais']),
+      tipologia: texto(query['tipologia']),
+      busca: texto(query['busca']),
     });
+
+    return reply.view(
+      'admin/imoveis-lista.eta',
+      {
+        ...basePainel({
+          tituloPagina: 'Imóveis do portfólio',
+          subtitulo: 'Detalhamento do catálogo, filtrado por situação, praça e tipologia.',
+          nomeUsuario: nomeQuemUsa(request),
+          abaAtiva: 'imoveis',
+          gruposFiltro: gruposDeFiltro(painel),
+          feedback: MENSAGENS_FEEDBACK[chaveFeedback] ?? null,
+          erro: chaveErro ? mensagemDoCampo({ campo: 'situacao', codigo: chaveErro }) : null,
+        }),
+        indicadores: painel.kpis,
+        linhas: linhasDoPainel(painel.resumos),
+        total: painel.total,
+        busca: painel.filtros.busca,
+        situacaoAtiva: painel.filtros.situacao,
+        paisAtivo: painel.filtros.pais,
+        tipologiaAtiva: painel.filtros.tipologia,
+      },
+      { layout: LAYOUT_PAINEL }
+    );
   });
 
   app.get('/admin/imoveis/novo', async (request: FastifyRequest, reply: FastifyReply) => {
-    return reply.view('admin/imovel-form.eta', {
-      ...contextoFormulario({
-        tipologia: tipologiaDoPedido(request),
-        valores: {},
-        acao: '/admin/imoveis/novo',
-        nomeUsuario: nomeQuemUsa(request),
-      }),
-    });
+    return reply.view(
+      'admin/imovel-form.eta',
+      {
+        ...contextoFormulario({
+          tipologia: tipologiaDoPedido(request),
+          valores: {},
+          acao: '/admin/imoveis/novo',
+          nomeUsuario: nomeQuemUsa(request),
+        }),
+      },
+      { layout: LAYOUT_PAINEL }
+    );
   });
 
   app.post('/admin/imoveis/novo', async (request: FastifyRequest, reply: FastifyReply) => {
@@ -327,19 +435,23 @@ export async function rotasPainel(app: FastifyInstance): Promise<void> {
       const query = request.query as Record<string, unknown>;
       const codigoErro = texto(query['erro']);
 
-      return reply.view('admin/imovel-form.eta', {
-        ...contextoFormulario({
-          // O link de tipologia também funciona na edição: mostra os campos do tipo escolhido
-          // com os dados salvos, e o próximo POST grava a troca.
-          tipologia: tipologiaDoPedidoOpcional(request) ?? registro.tipologia,
-          valores: {},
-          registro,
-          acao: `/admin/imoveis/${id}/editar`,
-          nomeUsuario: nomeQuemUsa(request),
-          erroFoto: codigoErro ? mensagemDoCampo({ campo: 'imagens', codigo: codigoErro }) : null,
-        }),
-        feedback: MENSAGENS_FEEDBACK[texto(query['feito'])] ?? null,
-      });
+      return reply.view(
+        'admin/imovel-form.eta',
+        {
+          ...contextoFormulario({
+            // O link de tipologia também funciona na edição: mostra os campos do tipo escolhido
+            // com os dados salvos, e o próximo POST grava a troca.
+            tipologia: tipologiaDoPedidoOpcional(request) ?? registro.tipologia,
+            valores: {},
+            registro,
+            acao: `/admin/imoveis/${id}/editar`,
+            nomeUsuario: nomeQuemUsa(request),
+            erroFoto: codigoErro ? mensagemDoCampo({ campo: 'imagens', codigo: codigoErro }) : null,
+            feedback: MENSAGENS_FEEDBACK[texto(query['feito'])] ?? null,
+          }),
+        },
+        { layout: LAYOUT_PAINEL }
+      );
     } catch (erro) {
       return falhaDoFormulario(reply, erro, request, {
         acao: `/admin/imoveis/${id}/editar`,
@@ -364,8 +476,26 @@ export async function rotasPainel(app: FastifyInstance): Promise<void> {
         acao: `/admin/imoveis/${id}/editar`,
         nomeUsuario: nomeQuemUsa(request),
         tipologia,
-        titulo: `Editar ${texto(bruto['ref']) || id}`,
+        tituloPagina: `Editar ${texto(bruto['ref']) || id}`,
       });
+    }
+  });
+
+  // A exclusão é definitiva e parte de um POST do próprio painel: o cookie de sessão é SameSite
+  // Lax, então uma página de fora não consegue repetir o pedido com a sessão de quem administra.
+  app.post('/admin/imoveis/:id/excluir', async (request: FastifyRequest, reply: FastifyReply) => {
+    const id = (request.params as { id?: string }).id ?? '';
+
+    try {
+      excluirImovelDoCatalogo(id);
+      return reply.redirect('/admin?feito=excluido', 302);
+    } catch (erro) {
+      if (erro instanceof ImovelNaoEncontradoError) {
+        return reply.status(404).type('text/plain').send('imovel_nao_encontrado');
+      }
+
+      request.log.error({ err: erro }, 'falha inesperada ao excluir imóvel');
+      return reply.status(500).type('text/plain').send('falha_interna');
     }
   });
 
@@ -448,13 +578,17 @@ export async function rotasPainel(app: FastifyInstance): Promise<void> {
   app.get('/admin/textos', async (request: FastifyRequest, reply: FastifyReply) => {
     const query = request.query as Record<string, unknown>;
 
-    return reply.view('admin/textos-form.eta', {
-      ...contextoTextos({
-        nomeUsuario: nomeQuemUsa(request),
-        valores: valoresDosTextos(),
-        feedback: MENSAGENS_FEEDBACK[texto(query['feito'])] ?? null,
-      }),
-    });
+    return reply.view(
+      'admin/textos-form.eta',
+      {
+        ...contextoTextos({
+          nomeUsuario: nomeQuemUsa(request),
+          valores: valoresDosTextos(),
+          feedback: MENSAGENS_FEEDBACK[texto(query['feito'])] ?? null,
+        }),
+      },
+      { layout: LAYOUT_PAINEL }
+    );
   });
 
   app.post('/admin/textos/:pagina', async (request: FastifyRequest, reply: FastifyReply) => {
@@ -487,13 +621,17 @@ export async function rotasPainel(app: FastifyInstance): Promise<void> {
 
         return reply
           .status(status)
-          .view('admin/textos-form.eta', {
-            ...contextoTextos({
-              nomeUsuario: nomeQuemUsa(request),
-              valores,
-              erros,
-            }),
-          });
+          .view(
+            'admin/textos-form.eta',
+            {
+              ...contextoTextos({
+                nomeUsuario: nomeQuemUsa(request),
+                valores,
+                erros,
+              }),
+            },
+            { layout: LAYOUT_PAINEL }
+          );
       }
 
       request.log.error({ err: erro }, 'falha inesperada ao gravar texto');

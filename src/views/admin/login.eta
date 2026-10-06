@@ -4,37 +4,36 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Entrar no painel · +55 Real Estate Global</title>
-    <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 26rem; line-height: 1.5; }
-      label { display: block; margin-bottom: 1rem; }
-      input { display: block; width: 100%; padding: .5rem; margin-top: .25rem; }
-      button { padding: .6rem 1rem; }
-      .erro { color: #a3232a; }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..400&amp;family=Instrument+Sans:wght@400..600&amp;display=swap"
+    />
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/painel.css" />
   </head>
-  <body>
-    <main>
-      <h1>Entrar no painel</h1>
+  <body class="painel">
+    <main class="porta-painel">
+      <form class="porta-cartao" method="post" action="/admin/login">
+        <p class="marca-nome">Painel do portfólio</p>
+        <h1 class="cabecalho-titulo">Entrar no painel</h1>
 
-      <% if (it.erro) { %>
-        <p class="erro" role="alert"><%= it.erro %></p>
-      <% } %>
+        <% if (it.erro) { %><p class="erro-bloco" role="alert"><%= it.erro %></p><% } %>
 
-      <form method="post" action="/admin/login">
-        <label>
+        <label class="campo">
           E-mail
           <input name="email" type="email" autocomplete="username" required />
         </label>
-        <label>
+        <label class="campo">
           Senha
           <input name="senha" type="password" autocomplete="current-password" required />
         </label>
-        <button type="submit">Entrar</button>
-      </form>
 
-      <p>
-        Projeto de avaliação técnica. Imóveis, valores e contatos fictícios.
-      </p>
+        <button class="botao botao-primario" type="submit">Entrar</button>
+
+        <p class="porta-aviso">Projeto de avaliação técnica. Imóveis, valores e contatos fictícios.</p>
+      </form>
     </main>
   </body>
 </html>

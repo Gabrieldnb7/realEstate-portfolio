@@ -1,247 +1,237 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title><%= it.titulo %> · Painel +55</title>
-    <style>
-      body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 42rem; line-height: 1.5; }
-      label { display: block; margin-bottom: 1rem; }
-      input, select, textarea { display: block; width: 100%; padding: .4rem; margin-top: .25rem; }
-      textarea { min-height: 6rem; }
-      .linha { display: flex; gap: 1rem; flex-wrap: wrap; }
-      .linha label { flex: 1 1 10rem; }
-      .erro { color: #a3232a; display: block; }
-      .resumo-erro { border: 1px solid #a3232a; padding: .5rem 1rem; margin-bottom: 1rem; }
-      .resumo-erro .erro, .resumo-erro li { color: #a3232a; }
-      .aviso { padding: .5rem; background: #eef3ea; }
-      .tipos { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1rem; }
-      .tipos .atual { font-weight: 700; }
-      fieldset { border: 1px solid #d9d2c7; margin: 0 0 1rem; padding: 1rem; }
-      legend { padding: 0 .25rem; }
-      .fotos { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; gap: 1rem; flex-wrap: wrap; }
-      .fotos li { border: 1px solid #d9d2c7; padding: .5rem; width: 11rem; }
-      .fotos img { display: block; height: auto; }
-      .capa { font-weight: 700; }
-    </style>
-  </head>
-  <body>
-    <header>
-      <nav>
-        <a href="/admin">Voltar à lista</a>
-        <form method="post" action="/admin/logout">
-          <button type="submit">Sair</button>
-        </form>
-      </nav>
-      <h1><%= it.titulo %></h1>
+<section class="bloco-form">
+  <p class="atalhos-tipologia">
+    <% it.tipologias.forEach(function (tipo) { %>
+      <% if (tipo === it.tipologia) { %>
+        <span class="atalho-tipologia-ativo"><%= tipo %></span>
+      <% } else { %>
+        <a href="<%= it.acao %>?tipologia=<%= tipo %>"><%= tipo %></a>
+      <% } %>
+    <% }); %>
+  </p>
 
-      <% if (it.feedback) { %><p class="aviso" role="status"><%= it.feedback %></p><% } %>
-    </header>
+  <form method="post" action="<%= it.acao %>">
+    <input type="hidden" name="tipologia" value="<%= it.tipologia %>" />
 
-    <main>
-      <p class="tipos">
-        <% it.tipologias.forEach(function (tipo) { %>
-          <% if (tipo === it.tipologia) { %>
-            <span class="atual"><%= tipo %></span>
-          <% } else { %>
-            <a href="<%= it.acao %>?tipologia=<%= tipo %>"><%= tipo %></a>
-          <% } %>
-        <% }); %>
+    <% if (it.errosRestantes.length > 0) { %>
+      <div class="resumo-erros" role="alert">
+        <p>Não foi possível salvar:</p>
+        <ul>
+          <% it.errosRestantes.forEach(function (problema) { %>
+            <li><%= problema.campo %>: <%= problema.mensagem %></li>
+          <% }); %>
+        </ul>
+      </div>
+    <% } %>
+
+    <fieldset>
+      <legend>Identificação</legend>
+
+      <div class="grade-campos">
+        <label class="campo">
+          Referência
+          <input name="ref" value="<%= it.valores.ref %>" />
+          <% if (it.erros.ref) { %><span class="erro-campo"><%= it.erros.ref %></span><% } %>
+        </label>
+        <label class="campo">
+          Praça
+          <select name="pais">
+            <option value="BR"<% if (it.valores.pais === 'BR') { %> selected<% } %>>BR · Brasil</option>
+            <option value="PA"<% if (it.valores.pais === 'PA') { %> selected<% } %>>PA · Panamá</option>
+            <option value="AE"<% if (it.valores.pais === 'AE') { %> selected<% } %>>AE · Emirados</option>
+          </select>
+          <% if (it.erros.pais) { %><span class="erro-campo"><%= it.erros.pais %></span><% } %>
+        </label>
+      </div>
+
+      <label class="campo">
+        Título
+        <input name="titulo" value="<%= it.valores.titulo %>" />
+        <% if (it.erros.titulo) { %><span class="erro-campo"><%= it.erros.titulo %></span><% } %>
+      </label>
+
+      <div class="grade-campos">
+        <label class="campo">
+          Cidade
+          <input name="cidade" value="<%= it.valores.cidade %>" />
+          <% if (it.erros.cidade) { %><span class="erro-campo"><%= it.erros.cidade %></span><% } %>
+        </label>
+        <label class="campo">
+          Bairro
+          <input name="bairro" value="<%= it.valores.bairro %>" />
+          <% if (it.erros.bairro) { %><span class="erro-campo"><%= it.erros.bairro %></span><% } %>
+        </label>
+      </div>
+
+      <label class="campo">
+        Descrição
+        <textarea name="descricao"><%= it.valores.descricao %></textarea>
+        <% if (it.erros.descricao) { %><span class="erro-campo"><%= it.erros.descricao %></span><% } %>
+      </label>
+
+      <label class="campo">
+        Parceiro local
+        <input name="parceiro" value="<%= it.valores.parceiro %>" />
+        <% if (it.erros.parceiro) { %><span class="erro-campo"><%= it.erros.parceiro %></span><% } %>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Preço</legend>
+      <div class="grade-campos">
+        <label class="campo">
+          Valor
+          <input name="preco_valor" inputmode="decimal" value="<%= it.valores.preco_valor %>" />
+          <% if (it.erros['preco.valor']) { %><span class="erro-campo"><%= it.erros['preco.valor'] %></span><% } %>
+        </label>
+        <label class="campo">
+          Moeda
+          <select name="preco_moeda">
+            <option value="BRL"<% if (it.valores.preco_moeda === 'BRL') { %> selected<% } %>>BRL</option>
+            <option value="USD"<% if (it.valores.preco_moeda === 'USD') { %> selected<% } %>>USD</option>
+            <option value="AED"<% if (it.valores.preco_moeda === 'AED') { %> selected<% } %>>AED</option>
+          </select>
+          <% if (it.erros['preco.moeda']) { %><span class="erro-campo"><%= it.erros['preco.moeda'] %></span><% } %>
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Medidas e pavimentos</legend>
+      <div class="grade-campos">
+        <label class="campo">
+          Quartos
+          <input name="quartos" type="number" min="0" step="1" value="<%= it.valores.quartos %>" />
+          <% if (it.erros.quartos) { %><span class="erro-campo"><%= it.erros.quartos %></span><% } %>
+        </label>
+        <label class="campo">
+          Banheiros
+          <input name="banheiros" type="number" min="0" step="1" value="<%= it.valores.banheiros %>" />
+          <% if (it.erros.banheiros) { %><span class="erro-campo"><%= it.erros.banheiros %></span><% } %>
+        </label>
+        <label class="campo">
+          Vagas
+          <input name="vagas" type="number" min="0" step="1" value="<%= it.valores.vagas %>" />
+          <% if (it.erros.vagas) { %><span class="erro-campo"><%= it.erros.vagas %></span><% } %>
+        </label>
+      </div>
+
+      <% if (it.tipologia === 'apartamento' || it.tipologia === 'penthouse') { %>
+        <div class="grade-campos">
+          <label class="campo">
+            Área privativa em m²
+            <input name="areaPrivativa" inputmode="decimal" value="<%= it.valores.areaPrivativa %>" />
+            <% if (it.erros.areaPrivativa) { %><span class="erro-campo"><%= it.erros.areaPrivativa %></span><% } %>
+          </label>
+          <label class="campo">
+            Andar
+            <input name="andar" type="number" step="1" value="<%= it.valores.andar %>" />
+            <% if (it.erros.andar) { %><span class="erro-campo"><%= it.erros.andar %></span><% } %>
+          </label>
+        </div>
+      <% } else { %>
+        <div class="grade-campos">
+          <label class="campo">
+            Área construída em m²
+            <input name="areaConstruida" inputmode="decimal" value="<%= it.valores.areaConstruida %>" />
+            <% if (it.erros.areaConstruida) { %><span class="erro-campo"><%= it.erros.areaConstruida %></span><% } %>
+          </label>
+          <label class="campo">
+            Área do terreno em m²
+            <input name="areaTerreno" inputmode="decimal" value="<%= it.valores.areaTerreno %>" />
+            <% if (it.erros.areaTerreno) { %><span class="erro-campo"><%= it.erros.areaTerreno %></span><% } %>
+          </label>
+        </div>
+      <% } %>
+    </fieldset>
+
+    <p class="bloco-acoes">
+      <button class="botao botao-primario" type="submit">Salvar</button>
+      <a class="botao" href="/admin">Voltar à lista</a>
+    </p>
+  </form>
+
+  <% if (it.imovel) { %>
+    <form class="bloco-acoes" method="post" action="/admin/imoveis/<%= it.imovel.id %>/excluir">
+      <button class="botao botao-perigo" type="submit">Excluir imóvel</button>
+    </form>
+  <% } %>
+</section>
+
+<% if (it.imovel) { %>
+  <section class="bloco-form">
+    <fieldset>
+      <legend>Fotos</legend>
+      <p class="ajuda">
+        De 1 a 12 fotos por imóvel, em JPEG, PNG ou WebP, com até 5 MB cada. A primeira foto enviada é a capa.
       </p>
 
-      <form method="post" action="<%= it.acao %>">
-        <input type="hidden" name="tipologia" value="<%= it.tipologia %>" />
+      <% if (it.erroFoto) { %><p class="erro-bloco" role="alert"><%= it.erroFoto %></p><% } %>
 
-        <% if (it.errosRestantes.length > 0) { %>
-          <div class="resumo-erro" role="alert">
-            <p>Não foi possível salvar:</p>
-            <ul>
-              <% it.errosRestantes.forEach(function (problema) { %>
-                <li><%= problema.campo %>: <%= problema.mensagem %></li>
-              <% }); %>
-            </ul>
-          </div>
-        <% } %>
-
-        <div class="linha">
-          <label>
-            Referência
-            <input name="ref" value="<%= it.valores.ref %>" />
-            <% if (it.erros.ref) { %><span class="erro"><%= it.erros.ref %></span><% } %>
-          </label>
-          <label>
-            Praça
-            <select name="pais">
-              <option value="BR"<% if (it.valores.pais === 'BR') { %> selected<% } %>>BR · Brasil</option>
-              <option value="PA"<% if (it.valores.pais === 'PA') { %> selected<% } %>>PA · Panamá</option>
-              <option value="AE"<% if (it.valores.pais === 'AE') { %> selected<% } %>>AE · Emirados</option>
-            </select>
-            <% if (it.erros.pais) { %><span class="erro"><%= it.erros.pais %></span><% } %>
-          </label>
-        </div>
-
-        <label>
-          Título
-          <input name="titulo" value="<%= it.valores.titulo %>" />
-          <% if (it.erros.titulo) { %><span class="erro"><%= it.erros.titulo %></span><% } %>
-        </label>
-
-        <div class="linha">
-          <label>
-            Cidade
-            <input name="cidade" value="<%= it.valores.cidade %>" />
-            <% if (it.erros.cidade) { %><span class="erro"><%= it.erros.cidade %></span><% } %>
-          </label>
-          <label>
-            Bairro
-            <input name="bairro" value="<%= it.valores.bairro %>" />
-            <% if (it.erros.bairro) { %><span class="erro"><%= it.erros.bairro %></span><% } %>
-          </label>
-        </div>
-
-        <label>
-          Descrição
-          <textarea name="descricao"><%= it.valores.descricao %></textarea>
-          <% if (it.erros.descricao) { %><span class="erro"><%= it.erros.descricao %></span><% } %>
-        </label>
-
-        <label>
-          Parceiro local
-          <input name="parceiro" value="<%= it.valores.parceiro %>" />
-          <% if (it.erros.parceiro) { %><span class="erro"><%= it.erros.parceiro %></span><% } %>
-        </label>
-
-        <fieldset>
-          <legend>Preço</legend>
-          <div class="linha">
-            <label>
-              Valor
-              <input name="preco_valor" inputmode="decimal" value="<%= it.valores.preco_valor %>" />
-              <% if (it.erros['preco.valor']) { %><span class="erro"><%= it.erros['preco.valor'] %></span><% } %>
-            </label>
-            <label>
-              Moeda
-              <select name="preco_moeda">
-                <option value="BRL"<% if (it.valores.preco_moeda === 'BRL') { %> selected<% } %>>BRL</option>
-                <option value="USD"<% if (it.valores.preco_moeda === 'USD') { %> selected<% } %>>USD</option>
-                <option value="AED"<% if (it.valores.preco_moeda === 'AED') { %> selected<% } %>>AED</option>
-              </select>
-              <% if (it.erros['preco.moeda']) { %><span class="erro"><%= it.erros['preco.moeda'] %></span><% } %>
-            </label>
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>Medidas e pavimentos</legend>
-          <div class="linha">
-            <label>
-              Quartos
-              <input name="quartos" type="number" min="0" step="1" value="<%= it.valores.quartos %>" />
-              <% if (it.erros.quartos) { %><span class="erro"><%= it.erros.quartos %></span><% } %>
-            </label>
-            <label>
-              Banheiros
-              <input name="banheiros" type="number" min="0" step="1" value="<%= it.valores.banheiros %>" />
-              <% if (it.erros.banheiros) { %><span class="erro"><%= it.erros.banheiros %></span><% } %>
-            </label>
-            <label>
-              Vagas
-              <input name="vagas" type="number" min="0" step="1" value="<%= it.valores.vagas %>" />
-              <% if (it.erros.vagas) { %><span class="erro"><%= it.erros.vagas %></span><% } %>
-            </label>
-          </div>
-
-          <% if (it.tipologia === 'apartamento' || it.tipologia === 'penthouse') { %>
-            <div class="linha">
-              <label>
-                Área privativa em m²
-                <input name="areaPrivativa" inputmode="decimal" value="<%= it.valores.areaPrivativa %>" />
-                <% if (it.erros.areaPrivativa) { %><span class="erro"><%= it.erros.areaPrivativa %></span><% } %>
-              </label>
-              <label>
-                Andar
-                <input name="andar" type="number" step="1" value="<%= it.valores.andar %>" />
-                <% if (it.erros.andar) { %><span class="erro"><%= it.erros.andar %></span><% } %>
-              </label>
-            </div>
-          <% } else { %>
-            <div class="linha">
-              <label>
-                Área construída em m²
-                <input name="areaConstruida" inputmode="decimal" value="<%= it.valores.areaConstruida %>" />
-                <% if (it.erros.areaConstruida) { %><span class="erro"><%= it.erros.areaConstruida %></span><% } %>
-              </label>
-              <label>
-                Área do terreno em m²
-                <input name="areaTerreno" inputmode="decimal" value="<%= it.valores.areaTerreno %>" />
-                <% if (it.erros.areaTerreno) { %><span class="erro"><%= it.erros.areaTerreno %></span><% } %>
-              </label>
-            </div>
-          <% } %>
-        </fieldset>
-
-        <button type="submit">Salvar</button>
-      </form>
-
-      <% if (it.imovel) { %>
-        <fieldset>
-          <legend>Fotos</legend>
-          <p>De 1 a 12 fotos por imóvel, em JPEG, PNG ou WebP, com até 5 MB cada. A primeira foto enviada é a capa.</p>
-
-          <% if (it.erroFoto) { %><p class="erro" role="alert"><%= it.erroFoto %></p><% } %>
-
-          <% if (it.imovel.fotos.length === 0) { %>
-            <p>Nenhuma foto enviada.</p>
-          <% } else { %>
-            <ul class="fotos">
-              <% it.imovel.fotos.forEach(function (foto, indice) { %>
-                <li>
-                  <img src="<%= foto.url %>" alt="<%= foto.alt %>" width="160" />
-                  <p><%= foto.alt %></p>
-                  <% if (indice === 0) { %><p class="capa">Capa</p><% } %>
-                  <form method="post" action="/admin/imoveis/<%= it.imovel.id %>/fotos/remover">
-                    <input type="hidden" name="imagemId" value="<%= foto.id %>" />
-                    <button type="submit">Remover</button>
-                  </form>
-                </li>
-              <% }); %>
-            </ul>
-          <% } %>
-
-          <form method="post" action="/admin/imoveis/<%= it.imovel.id %>/fotos" enctype="multipart/form-data">
-            <label>
-              Arquivo
-              <input type="file" name="arquivo" accept="image/jpeg,image/png,image/webp" />
-            </label>
-            <label>
-              Descrição da foto
-              <input name="alt" />
-            </label>
-            <button type="submit">Enviar foto</button>
-          </form>
-        </fieldset>
-
-        <fieldset>
-          <legend>Situação e publicação</legend>
-          <p>Slug: <%= it.imovel.slug %></p>
-          <p>Situação atual: <%= it.imovel.situacao %></p>
-          <p>Fotos cadastradas: <%= it.imovel.totalFotos %></p>
-
-          <form method="post" action="/admin/imoveis/<%= it.imovel.id %>/situacao">
-            <label>
-              Mudar situação
-              <select name="situacao">
-                <option value="rascunho">rascunho</option>
-                <option value="publicado">publicado</option>
-                <option value="reservado">reservado</option>
-                <option value="vendido">vendido</option>
-                <option value="arquivado">arquivado</option>
-              </select>
-            </label>
-            <button type="submit">Aplicar</button>
-          </form>
-        </fieldset>
+      <% if (it.imovel.fotos.length === 0) { %>
+        <p class="ajuda">Nenhuma foto enviada.</p>
+      <% } else { %>
+        <ul class="grade-fotos">
+          <% it.imovel.fotos.forEach(function (foto, indice) { %>
+            <li class="item-foto">
+              <img src="<%= foto.url %>" alt="<%= foto.alt %>" width="160" />
+              <p><%= foto.alt %></p>
+              <% if (indice === 0) { %><p class="selo-capa">Capa</p><% } %>
+              <form method="post" action="/admin/imoveis/<%= it.imovel.id %>/fotos/remover">
+                <input type="hidden" name="imagemId" value="<%= foto.id %>" />
+                <button class="botao" type="submit">Remover</button>
+              </form>
+            </li>
+          <% }); %>
+        </ul>
       <% } %>
-    </main>
-  </body>
-</html>
+
+      <form method="post" action="/admin/imoveis/<%= it.imovel.id %>/fotos" enctype="multipart/form-data">
+        <div class="grade-campos">
+          <label class="campo">
+            Arquivo
+            <input type="file" name="arquivo" accept="image/jpeg,image/png,image/webp" />
+          </label>
+          <label class="campo">
+            Descrição da foto
+            <input name="alt" />
+          </label>
+        </div>
+        <p class="bloco-acoes"><button class="botao botao-primario" type="submit">Enviar foto</button></p>
+      </form>
+    </fieldset>
+  </section>
+
+  <section class="bloco-form">
+    <fieldset>
+      <legend>Situação e publicação</legend>
+      <dl class="resumo-dados">
+        <div>
+          <dt>Slug</dt>
+          <dd><%= it.imovel.slug %></dd>
+        </div>
+        <div>
+          <dt>Situação atual</dt>
+          <dd><span class="selo selo-situacao situacao-<%= it.imovel.situacao %>"><span class="ponto-situacao"></span><%= it.imovel.situacao %></span></dd>
+        </div>
+        <div>
+          <dt>Fotos cadastradas</dt>
+          <dd><%= it.imovel.totalFotos %></dd>
+        </div>
+      </dl>
+
+      <form method="post" action="/admin/imoveis/<%= it.imovel.id %>/situacao" class="grade-campos">
+        <label class="campo">
+          Mudar situação
+          <select name="situacao">
+            <option value="rascunho">rascunho</option>
+            <option value="publicado">publicado</option>
+            <option value="reservado">reservado</option>
+            <option value="vendido">vendido</option>
+            <option value="arquivado">arquivado</option>
+          </select>
+        </label>
+        <p class="bloco-acoes"><button class="botao botao-primario" type="submit">Aplicar</button></p>
+      </form>
+    </fieldset>
+  </section>
+<% } %>

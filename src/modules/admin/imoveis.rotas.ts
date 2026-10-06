@@ -7,6 +7,7 @@ import {
   MARCA_REQUISICAO_INVALIDA,
   atualizarImovelNoCatalogo,
   criarImovelNoCatalogo,
+  excluirImovelDoCatalogo,
   mudarSituacaoDoImovel,
 } from './imoveis.servico.js';
 
@@ -64,4 +65,14 @@ export async function rotasImoveisAdmin(app: FastifyInstance): Promise<void> {
       }
     }
   );
+
+  // Exclusão definitiva, no mesmo padrão da foto: 204 quando o registro saiu.
+  app.delete('/api/v1/admin/imoveis/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      excluirImovelDoCatalogo(idDaRota(request));
+      return reply.status(204).send();
+    } catch (erro) {
+      return responderFalha(reply, erro, request.log);
+    }
+  });
 }

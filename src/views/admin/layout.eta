@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= it.tituloPagina %> · Painel +55</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..400&amp;family=Instrument+Sans:wght@400..600&amp;display=swap"
+    />
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/painel.css" />
+  </head>
+  <body class="painel">
+    <div class="painel-app">
+      <aside class="painel-lateral">
+        <header class="marca-lateral">
+          <span class="marca-selo">+55</span>
+          <p class="marca-nome">Painel do portfólio</p>
+        </header>
+
+        <nav class="navegacao-lateral" aria-label="Seções do painel">
+          <a class="aba<% if (it.abaAtiva === 'imoveis') { %> aba-ativa<% } %>" href="/admin"
+            ><span>Imóveis</span></a
+          >
+          <a class="aba<% if (it.abaAtiva === 'novo') { %> aba-ativa<% } %>" href="/admin/imoveis/novo"
+            ><span>Novo imóvel</span></a
+          >
+          <a class="aba<% if (it.abaAtiva === 'textos') { %> aba-ativa<% } %>" href="/admin/textos"
+            ><span>Textos do site</span></a
+          >
+        </nav>
+
+        <% if (it.gruposFiltro.length > 0) { %>
+          <% it.gruposFiltro.forEach(function (grupo) { %>
+            <nav class="filtro-bloco" aria-label="Filtros de <%= grupo.rotulo %>">
+              <p class="filtro-titulo"><%= grupo.rotulo %></p>
+              <ul class="filtro-lista">
+                <% grupo.opcoes.forEach(function (opcao) { %>
+                  <li>
+                    <a
+                      class="filtro-item<% if (opcao.ativa) { %> filtro-item-ativo<% } %>"
+                      href="<%= opcao.url %>"
+                      <% if (opcao.ativa) { %>aria-current="true"<% } %>
+                    >
+                      <span class="filtro-valor"><%= opcao.rotulo %></span>
+                      <span class="filtro-quantidade"><%= opcao.quantidade %></span>
+                    </a>
+                  </li>
+                <% }); %>
+              </ul>
+            </nav>
+          <% }); %>
+
+          <p class="filtro-limpar">
+            <a class="botao" href="<%= it.urlLimparFiltros %>">Limpar filtros</a>
+          </p>
+        <% } %>
+
+        <footer class="pe-lateral">
+          <p>Sessão de <%= it.nomeUsuario %>.</p>
+        </footer>
+      </aside>
+
+      <div class="painel-conteudo">
+        <header class="topo-painel">
+          <div>
+            <h1 class="titulo-pagina"><%= it.tituloPagina %></h1>
+            <p class="subtitulo-pagina"><%= it.subtitulo %></p>
+          </div>
+          <nav class="acoes-topo" aria-label="Sessão">
+            <a class="botao" href="/">Início do site</a>
+            <form method="post" action="/admin/logout">
+              <button class="botao" type="submit">Sair</button>
+            </form>
+          </nav>
+        </header>
+
+        <% if (it.feedback || it.erro) { %>
+          <div class="mensagens">
+            <% if (it.feedback) { %><p class="mensagem" role="status"><%= it.feedback %></p><% } %>
+            <% if (it.erro) { %><p class="mensagem mensagem-erro" role="alert"><%= it.erro %></p><% } %>
+          </div>
+        <% } %>
+
+        <main class="area-principal"><%~ it.body %></main>
+
+        <footer class="rodape-painel">
+          <p>Projeto de avaliação técnica. Imóveis, valores e contatos fictícios.</p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

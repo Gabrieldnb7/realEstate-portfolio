@@ -454,7 +454,7 @@ describe('Cadastro, edição e transição de imóveis', () => {
 
       expect(resposta.statusCode).toBe(422);
       expect(resposta.body).toContain('Moeda incompatível para o país BR');
-      expect(resposta.body).toContain('<h1>Editar BR-1001</h1>');
+      expect(resposta.body).toContain('<h1 class="titulo-pagina">Editar BR-1001</h1>');
       // O que foi digitado continua na tela para corrigir.
       expect(resposta.body).toContain('<option value="USD" selected>USD</option>');
       expect(linhaDeImovel(id).preco_moeda).toBe('BRL');
@@ -477,13 +477,14 @@ describe('Cadastro, edição e transição de imóveis', () => {
 
       const lista = await app.inject({ method: 'GET', url: '/admin?feito=situacao', headers: { cookie } });
       expect(lista.body).toContain('Situação atualizada');
-      expect(lista.body).toContain('<td>publicado</td>');
+      expect(lista.body).toContain('class="selo selo-situacao situacao-publicado"');
 
       const editar = await app.inject({ method: 'GET', url: `/admin/imoveis/${id}/editar`, headers: { cookie } });
       expect(editar.statusCode).toBe(200);
       expect(editar.body).toContain('value="Apartamento na Ponta Negra"');
       expect(editar.body).toContain('Situação e publicação');
-      expect(editar.body).toContain('Fotos cadastradas: 1');
+      expect(editar.body).toContain('<dt>Fotos cadastradas</dt>');
+      expect(editar.body).toContain('<dd>1</dd>');
 
       const recusada = await enviarFormulario(`/admin/imoveis/${id}/situacao`, { situacao: 'inventada' });
       expect(recusada.headers.location).toBe('/admin?erro=invalida');
