@@ -1,0 +1,465 @@
+/*
+  Estilo das páginas públicas (Início, Imóveis e Detalhe).
+  Cor, fonte e espaçamento vêm dos tokens do Anexo B (tokens.css). As poucas medidas de
+  layout que não existem no Anexo B ganharam nome aqui, para nenhum valor ficar solto.
+*/
+:root {
+  --largura-pagina: 72rem;
+  --largura-texto: 46rem;
+  --coluna-cartao: 16rem;
+  --coluna-praca: 14rem;
+  --coluna-foto: 15rem;
+  --coluna-ficha: 11rem;
+
+  --borda-fina: 1px;
+  --foco-largura: 3px;
+  --foco-afaste: var(--sp-1);
+  --foco-halo: var(--sp-1);
+  --sublinhado-afaste: 2px;
+  --elevacao: var(--sp-1);
+
+  /* Pesos que o tokens.css do Anexo B não traz como variável; ficam nomeados aqui. */
+  --peso-titulo-leve: 300;
+  --peso-titulo: 400;
+  --peso-valor: 500;
+  --peso-rotulo: 600;
+
+  --tempo-suave: 180ms;
+  --tempo-entrada: 260ms;
+  --atraso-cartao: 40ms;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* O rodapé fecha a janela mesmo quando a página tem pouco conteúdo. */
+  min-height: 100dvh;
+  background: var(--c-paper);
+  color: var(--c-ink);
+  font-family: var(--font-text);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  /* Palavra longa (slug, endereço de e-mail) quebra em vez de abrir rolagem horizontal. */
+  overflow-wrap: break-word;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: var(--foco-largura) solid var(--c-night-brass);
+  outline-offset: var(--foco-afaste);
+  /* O anel de latão some no papel claro; o halo escuro o separa do fundo. */
+  box-shadow: 0 0 0 var(--foco-halo) var(--c-primary);
+}
+
+h1 {
+  margin: 0 0 var(--sp-4);
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  font-weight: var(--peso-titulo-leve);
+  line-height: var(--lh-h1);
+  letter-spacing: var(--tracking-h1);
+}
+
+h2 {
+  margin: 0 0 var(--sp-2);
+  color: var(--c-brass-text);
+  font-size: var(--fs-small);
+  font-weight: var(--peso-rotulo);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+h3 {
+  margin: 0 0 var(--sp-1);
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--peso-titulo);
+  line-height: var(--lh-h3);
+}
+
+p {
+  margin: 0 0 var(--sp-2);
+}
+
+a {
+  color: inherit;
+}
+
+.topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.marca {
+  margin: 0;
+  font-size: var(--fs-overline);
+  font-weight: var(--peso-rotulo);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+}
+
+.menu a {
+  font-size: var(--fs-small);
+}
+
+main {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: var(--largura-pagina);
+  margin: 0 auto;
+  padding: var(--sp-6) var(--sp-4);
+}
+
+.secao {
+  margin-bottom: var(--sp-7);
+}
+
+.secao > p {
+  max-width: var(--measure);
+}
+
+/* O título de abertura da Início é o único tamanho de cartaz. */
+.abertura h1 {
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+}
+
+.chamada {
+  max-width: var(--measure);
+  margin: 0;
+  color: var(--c-ink-muted);
+  font-size: var(--fs-lead);
+  line-height: var(--lh-lead);
+}
+
+.rotulo {
+  margin: 0 0 var(--sp-2);
+  color: var(--c-ink-muted);
+  font-size: var(--fs-overline);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.opcoes li {
+  border: var(--borda-fina) solid var(--c-border-strong);
+  background: var(--c-surface);
+}
+
+.opcoes a,
+.opcoes .ativa {
+  display: block;
+  padding: var(--sp-2) var(--sp-3);
+  color: var(--c-ink);
+  font-size: var(--fs-small);
+  text-decoration: none;
+}
+
+.opcoes .ativa {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-5) var(--sp-7);
+  margin-bottom: var(--sp-5);
+  padding: 0;
+}
+
+.contagem {
+  margin: 0 0 var(--sp-4);
+  color: var(--c-ink-muted);
+}
+
+.vazio {
+  color: var(--c-ink-muted);
+}
+
+.grade {
+  display: grid;
+  gap: var(--sp-4);
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--sp-4);
+}
+
+.grade-cartoes {
+  grid-template-columns: repeat(auto-fit, minmax(var(--coluna-cartao), 1fr));
+}
+
+.grade-pracas {
+  grid-template-columns: repeat(auto-fit, minmax(var(--coluna-praca), 1fr));
+}
+
+.grade-fotos {
+  grid-template-columns: repeat(auto-fit, minmax(var(--coluna-foto), 1fr));
+}
+
+.grade li {
+  min-width: 0;
+}
+
+.bloco {
+  border: var(--borda-fina) solid var(--c-line);
+  background: var(--c-surface);
+  padding: var(--sp-4);
+}
+
+.cartao {
+  display: block;
+  border: var(--borda-fina) solid var(--c-border-strong);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  text-decoration: none;
+}
+
+.cartao img,
+.sem-foto {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.sem-foto {
+  display: grid;
+  place-items: center;
+  background: var(--c-paper);
+  color: var(--c-ink-muted);
+  font-size: var(--fs-small);
+}
+
+.cartao-corpo {
+  display: block;
+  padding: var(--sp-4);
+}
+
+.cartao h3 {
+  font-size: var(--fs-body);
+  font-weight: var(--peso-rotulo);
+  font-family: var(--font-text);
+}
+
+.local {
+  margin: 0;
+  color: var(--c-ink-muted);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+.preco {
+  margin: var(--sp-2) 0 0;
+  color: var(--c-brass-text);
+  font-size: var(--fs-body);
+  font-weight: var(--peso-valor);
+  font-variant-numeric: tabular-nums;
+}
+
+.preco-grande {
+  margin: 0;
+  font-size: var(--fs-price);
+}
+
+.selo {
+  display: inline-block;
+  margin: var(--sp-2) 0 0;
+  padding: var(--sp-1) var(--sp-2);
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  font-size: var(--fs-overline);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.resumo {
+  max-width: var(--largura-texto);
+  margin-bottom: var(--sp-7);
+}
+
+.por-m2 {
+  margin: 0;
+  color: var(--c-ink-muted);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.botao {
+  display: inline-block;
+  margin: var(--sp-3) 0 0;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--c-brass);
+  color: var(--c-ink);
+  font-size: var(--fs-small);
+  font-weight: var(--peso-valor);
+  text-decoration: none;
+}
+
+.foto {
+  margin: 0;
+}
+
+.foto img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: var(--borda-fina) solid var(--c-border-strong);
+}
+
+.foto figcaption {
+  margin: var(--sp-1) 0 0;
+  color: var(--c-ink-muted);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+.ficha {
+  display: grid;
+  gap: var(--sp-3) var(--sp-5);
+  grid-template-columns: repeat(auto-fit, minmax(var(--coluna-ficha), 1fr));
+  margin: 0;
+}
+
+.ficha div {
+  border-top: var(--borda-fina) solid var(--c-border-strong);
+  padding-top: var(--sp-2);
+}
+
+.ficha dt {
+  color: var(--c-brass-text);
+  font-size: var(--fs-overline);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.ficha dd {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.rodape {
+  padding: var(--sp-5) var(--sp-4);
+  background: var(--c-night);
+  color: var(--c-night-ink);
+}
+
+.rodape p {
+  max-width: var(--largura-pagina);
+  margin: 0 auto var(--sp-2);
+}
+
+.rodape a {
+  text-decoration: underline;
+  text-underline-offset: var(--sublinhado-afaste);
+}
+
+.aviso {
+  color: var(--c-night-muted);
+  font-size: var(--fs-small);
+  line-height: var(--lh-small);
+}
+
+/* Animação 1 · entrada: os cartões surgem no lugar, um após o outro. */
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(var(--sp-3));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.grade li {
+  animation: surgir var(--tempo-entrada) ease-out both;
+}
+
+.grade li:nth-child(2) {
+  animation-delay: var(--atraso-cartao);
+}
+
+.grade li:nth-child(3) {
+  animation-delay: calc(var(--atraso-cartao) * 2);
+}
+
+.grade li:nth-child(4) {
+  animation-delay: calc(var(--atraso-cartao) * 3);
+}
+
+.grade li:nth-child(5) {
+  animation-delay: calc(var(--atraso-cartao) * 4);
+}
+
+.grade li:nth-child(6) {
+  animation-delay: calc(var(--atraso-cartao) * 5);
+}
+
+/* Animação 2 · elevação: cartão e botão sobem ao receberem mouse ou foco do teclado. */
+.cartao,
+.botao {
+  transition: transform var(--tempo-suave) ease-out, opacity var(--tempo-suave) ease-out;
+}
+
+.cartao:hover,
+.cartao:focus-visible,
+.botao:hover,
+.botao:focus-visible {
+  transform: translateY(calc(var(--elevacao) * -1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .grade li {
+    opacity: 1;
+    transform: none;
+  }
+
+  .cartao:hover,
+  .cartao:focus-visible,
+  .botao:hover,
+  .botao:focus-visible {
+    transform: none;
+  }
+}

@@ -1,10 +1,10 @@
-<section class="abertura">
+<section class="secao">
   <h1>Imóveis do portfólio</h1>
   <p class="chamada">Filtre pela praça e pela ordem que interessam. A seleção fica no endereço, então
     a página volta igual depois de recarregar.</p>
 </section>
 
-<nav class="filtros">
+<nav class="filtros" aria-label="Filtros e ordenação do catálogo">
   <div class="filtro">
     <h2>Praça</h2>
     <ul class="opcoes">
@@ -28,13 +28,13 @@
   </div>
 </nav>
 
-<section>
+<section class="secao">
   <p class="contagem"><%= it.rotuloTotal %></p>
 
   <% if (it.cartoes.length === 0) { %>
     <p class="vazio">Nenhum imóvel nesta seleção. <a href="<%= it.urlCatalogoInteiro %>">Ver o catálogo inteiro</a>.</p>
   <% } else { %>
-    <ul class="cartoes">
+    <ul class="grade grade-cartoes">
       <% it.cartoes.forEach(function (cartao) { %>
         <li><%~ include('./cartao.eta', { cartao: cartao }) %></li>
       <% }); %>

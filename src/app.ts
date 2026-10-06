@@ -18,6 +18,7 @@ import { rotasPaginaLogin } from './modules/auth/login.rotas.js';
 import { registrarProtecaoPainel } from './repositories/seguranca/hooks.js';
 import { rotasCatalogo } from './routes/catalogo.rotas.js';
 import { rotasDetalhe } from './routes/detalhe.rotas.js';
+import { rotasEstaticas } from './routes/estatico.rotas.js';
 import { rotasMidia } from './routes/media.js';
 import { baseDaPaginaPublica, rotasSite } from './routes/site.js';
 import { saudeRoutes } from './routes/saude.js';
@@ -83,6 +84,7 @@ export async function buildApp() {
   });
 
   app.register(saudeRoutes);
+  app.register(rotasEstaticas);
   app.register(rotasSite);
   app.register(rotasCatalogo);
   app.register(rotasDetalhe);

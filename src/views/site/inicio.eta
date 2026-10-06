@@ -1,9 +1,9 @@
-<section class="abertura">
+<section class="secao abertura">
   <% if (it.texto.titulo) { %><h1><%= it.texto.titulo %></h1><% } %>
   <% if (it.texto.descricao) { %><p class="chamada"><%= it.texto.descricao %></p><% } %>
 </section>
 
-<section>
+<section class="secao">
   <h2>O método</h2>
   <p>Cada imóvel entra no portfólio por um motivo. Praça, entorno, preço por m² e o histórico da rua
     sustentam a leitura. O que não passa na tese não chega ao site.</p>
@@ -11,11 +11,11 @@
     não com adjetivos.</p>
 </section>
 
-<section>
+<section class="secao">
   <h2>Praças</h2>
-  <ul class="pracas">
+  <ul class="grade grade-pracas">
     <% it.pracas.forEach(function (praca) { %>
-      <li>
+      <li class="bloco">
         <h3><%= praca.nome %></h3>
         <p><%= praca.cidades %></p>
         <p><a href="<%= praca.url %>"><%= praca.chamada %></a></p>
@@ -24,16 +24,16 @@
   </ul>
 </section>
 
-<section>
+<section class="secao">
   <h2>Em destaque</h2>
   <% if (it.cartoes.length === 0) { %>
     <p class="vazio">Nenhum imóvel publicado até agora.</p>
   <% } else { %>
-    <ul class="cartoes">
+    <ul class="grade grade-cartoes">
       <% it.cartoes.forEach(function (cartao) { %>
         <li><%~ include('./cartao.eta', { cartao: cartao }) %></li>
       <% }); %>
     </ul>
   <% } %>
-  <p class="ver-tudo"><a href="/imoveis">Ver todos os imóveis</a></p>
+  <p><a href="/imoveis">Ver todos os imóveis</a></p>
 </section>

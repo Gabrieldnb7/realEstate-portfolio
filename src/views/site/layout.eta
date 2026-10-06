@@ -4,96 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><%= it.tituloPagina %> · Portfólio imobiliário +55Hub</title>
-    <style>
-      :root {
-        --c-primary: #1F3A34;
-        --c-on-primary: #FFFFFF;
-        --c-brass-text: #7A5A34;
-        --c-ink: #1A1A17;
-        --c-ink-muted: #5E5A52;
-        --c-line: #D9D3C7;
-        --c-paper: #F4F1EA;
-        --c-surface: #FBFAF6;
-        --c-night: #121714;
-        --c-night-ink: #ECE7DC;
-        --c-night-muted: #A7A193;
-      }
-      body {
-        margin: 0;
-        background: var(--c-paper);
-        color: var(--c-ink);
-        font-family: "Instrument Sans", system-ui, sans-serif;
-        line-height: 1.6;
-        /* O rodapé fecha a janela mesmo quando a página tem pouco conteúdo. */
-        min-height: 100vh;
-        min-height: 100dvh;
-        display: flex;
-        flex-direction: column;
-      }
-      .topo {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 1rem;
-        padding: 1.25rem 1.5rem;
-        background: var(--c-primary);
-        color: var(--c-on-primary);
-      }
-      .topo a { color: var(--c-on-primary); }
-      .marca { margin: 0; letter-spacing: .12em; text-transform: uppercase; font-size: .75rem; }
-      .topo nav { display: flex; gap: 1rem; }
-      main { flex: 1 0 auto; max-width: 68rem; margin: 0 auto; padding: 2.5rem 1.5rem; }
-      section { margin-bottom: 3rem; }
-      h1 { font-family: Georgia, serif; font-size: 2.5rem; line-height: 1.1; margin: 0 0 1rem; max-width: 22ch; }
-      h2 { font-size: 1.1rem; letter-spacing: .12em; text-transform: uppercase; color: var(--c-brass-text); margin: 0 0 .75rem; }
-      .chamada { font-size: 1.25rem; color: var(--c-ink-muted); max-width: 46ch; margin: 0; }
-      .pracas { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); list-style: none; padding: 0; margin: 0; }
-      .pracas li { background: var(--c-surface); border: 1px solid var(--c-line); padding: 1rem; }
-      .pracas h3 { margin: 0 0 .25rem; font-size: 1rem; }
-      .pracas p { margin: 0; color: var(--c-ink-muted); font-size: .9rem; }
-      .filtros { display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 2rem; }
-      .filtro h2 { margin-bottom: .5rem; }
-      .opcoes { display: flex; flex-wrap: wrap; gap: .5rem; list-style: none; padding: 0; margin: 0; }
-      .opcoes li { border: 1px solid var(--c-line); background: var(--c-surface); }
-      .opcoes a, .opcoes .ativa { display: block; padding: .4rem .75rem; font-size: .9rem; color: var(--c-ink); text-decoration: none; }
-      .opcoes .ativa { background: var(--c-primary); border-color: var(--c-primary); color: var(--c-on-primary); }
-      .contagem { margin: 0 0 1rem; color: var(--c-ink-muted); }
-      .vazio { color: var(--c-ink-muted); }
-      .cartoes { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); list-style: none; padding: 0; margin: 0 0 1.5rem; }
-      .cartoes li { min-width: 0; }
-      .cartao { display: block; background: var(--c-surface); border: 1px solid var(--c-line); color: var(--c-ink); text-decoration: none; }
-      .cartao img, .sem-foto { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
-      .sem-foto { background: var(--c-paper); color: var(--c-ink-muted); font-size: .875rem; place-items: center; }
-      .cartao-corpo { display: block; padding: 1rem; }
-      .cartao h3 { margin: 0 0 .25rem; font-family: Georgia, serif; font-size: 1.05rem; }
-      .local { margin: 0; color: var(--c-ink-muted); font-size: .9rem; }
-      .preco { margin: .5rem 0 0; color: var(--c-brass-text); font-weight: 600; }
-      .selo { display: inline-block; margin: .5rem 0 0; padding: .2rem .5rem; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; background: var(--c-primary); color: var(--c-on-primary); }
-      .ver-tudo { margin: 0; }
-      .ref { margin: 0 0 .5rem; letter-spacing: .12em; text-transform: uppercase; font-size: .75rem; color: var(--c-ink-muted); }
-      .toc { border: 1px solid var(--c-line); background: var(--c-surface); padding: 1.25rem; margin-bottom: 3rem; }
-      .toc .preco { margin: 0; font-size: 1.5rem; }
-      .preco-m2 { margin: .35rem 0 0; color: var(--c-ink-muted); font-size: .9rem; }
-      .botao { display: inline-block; margin-top: 1rem; padding: .7rem 1.1rem; background: var(--c-primary); color: var(--c-on-primary); text-decoration: none; font-size: .9rem; letter-spacing: .04em; }
-      .fotos { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); list-style: none; padding: 0; margin: 0; }
-      .fotos figure { margin: 0; }
-      .fotos img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: 1px solid var(--c-line); }
-      .fotos figcaption { margin: .35rem 0 0; color: var(--c-ink-muted); font-size: .85rem; }
-      .ficha { display: grid; gap: .75rem 2rem; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); margin: 0; }
-      .ficha div { border-top: 1px solid var(--c-line); padding-top: .5rem; }
-      .ficha dt { font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--c-brass-text); }
-      .ficha dd { margin: .2rem 0 0; font-size: 1.05rem; }
-      .voltar { margin: 1.5rem 0 0; }
-      .rodape { background: var(--c-night); color: var(--c-night-ink); padding: 2rem 1.5rem; }
-      .rodape p { max-width: 68rem; margin: 0 auto .5rem; }
-      .rodape a { color: var(--c-night-ink); }
-      .aviso { color: var(--c-night-muted); font-size: .875rem; }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..400&amp;family=Instrument+Sans:wght@400..600&amp;display=swap"
+    />
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/estilos.css" />
   </head>
   <body>
     <header class="topo">
       <p class="marca">+55Hub Corporate Group</p>
-      <nav>
+      <nav class="menu" aria-label="Páginas do site">
         <a href="/">Início</a>
         <a href="/imoveis">Imóveis</a>
         <a href="/admin">Painel</a>
