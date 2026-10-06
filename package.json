@@ -18,7 +18,7 @@
     "migrar": "tsx scripts/migrar.ts",
     "semear:teste": "tsx scripts/semear-teste.ts",
     "build": "tsc && tsx scripts/copiar-views.ts",
-    "start": "node dist/server.js",
+    "start": "npm run build && node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -37,9 +37,15 @@
     "vitest": "^5.0.3"
   },
   "devDependencies": {
-    "@rolldown/binding-win32-x64-msvc": "^1.2.12",
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^26.6.4",
     "tsx": "^4.23.15"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-darwin-arm64": "1.2.12",
+    "@rolldown/binding-darwin-x64": "1.2.12",
+    "@rolldown/binding-linux-arm64-gnu": "1.2.12",
+    "@rolldown/binding-linux-x64-gnu": "1.2.12",
+    "@rolldown/binding-win32-x64-msvc": "1.2.12"
   }
 }

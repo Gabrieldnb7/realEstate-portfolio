@@ -1,7 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { conectarBanco, fecharBanco } from '../src/infra/db.js';
 import { criarHashSenha } from '../src/repositories/seguranca/senhas.js';
 import { normalizarEmail } from '../src/modules/auth/auth.servico.js';
@@ -199,7 +199,10 @@ export async function semearBase(): Promise<void> {
 
   // 2. Administrador inicial
   const adminEmail = normalizarEmail(process.env.ADMIN_EMAIL ?? 'admin@realestate.example');
-  const adminSenha = process.env.ADMIN_SENHA ?? 'AdminSeguro123!';
+  const senhaConfigurada = (process.env.ADMIN_SENHA ?? '').trim();
+  // Sem senha padrão no repositório: sem ADMIN_SENHA no ambiente, a senha é sorteada e impressa
+  // uma vez, só para quem avalia conseguir entrar no painel.
+  const adminSenha = senhaConfigurada === '' ? randomBytes(15).toString('base64url') : senhaConfigurada;
 
   const adminExiste = db.prepare('SELECT id FROM usuarios WHERE email = ?').get(adminEmail);
   if (!adminExiste) {
@@ -209,6 +212,10 @@ export async function semearBase(): Promise<void> {
       VALUES (?, ?, ?, ?, ?)
     `).run(randomUUID(), 'Administrador', adminEmail, senhaHash, new Date().toISOString());
     console.log(`[seed] Administrador criado: ${adminEmail}`);
+    if (senhaConfigurada === '') {
+      console.log(`[seed] Senha sorteada do administrador: ${adminSenha}`);
+      console.log('[seed] Defina ADMIN_SENHA no ambiente para fixar a senha do painel.');
+    }
   } else {
     console.log(`[seed] Administrador já existe: ${adminEmail}`);
   }

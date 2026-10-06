@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
 
 let envCarregado = false;
@@ -40,13 +41,23 @@ function lerAmbiente(): Ambiente {
 
 function lerSegredoApp(ambiente: Ambiente): string {
   const segredo = lerTexto('SEGREDO_APP');
-  if (segredo.length < TAMANHO_MINIMO_SEGREDO) {
-    throw new ConfiguraçãoInvalidaError(
-      `SEGREDO_APP deve ter pelo menos ${TAMANHO_MINIMO_SEGREDO} caracteres (ambiente: ${ambiente}). ` +
-        'Defina no ambiente do processo ou no .env local; nunca commite o valor.'
+  if (segredo.length >= TAMANHO_MINIMO_SEGREDO) return segredo;
+
+  // O manifesto de execução (banca.json) precisa rodar num clone limpo, sem .env. Em
+  // desenvolvimento o segredo nasce aleatório em cada processo, então nenhuma senha entra no
+  // repositório e as sessões simplesmente caem a cada reinício. Fora daí, falta de segredo é erro.
+  if (ambiente === 'development') {
+    console.warn(
+      '[config] SEGREDO_APP ausente: usando segredo efêmero de desenvolvimento. ' +
+        'As sessões caem a cada reinício; defina SEGREDO_APP no .env local para sessões estáveis.'
     );
+    return randomBytes(TAMANHO_MINIMO_SEGREDO).toString('base64url');
   }
-  return segredo;
+
+  throw new ConfiguraçãoInvalidaError(
+    `SEGREDO_APP deve ter pelo menos ${TAMANHO_MINIMO_SEGREDO} caracteres (ambiente: ${ambiente}). ` +
+      'Defina no ambiente do processo ou no .env local; nunca commite o valor.'
+  );
 }
 
 function lerTtlSessao(): number {

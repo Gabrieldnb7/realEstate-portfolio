@@ -1,0 +1,13 @@
+{
+  "stack": "typescript-node-fastify-sqlite",
+  "renderizacao": "ssr",
+  "comandos": {
+    "instalar": "npm ci",
+    "migrar": "npm run migrar",
+    "semear": "npm run semear:teste",
+    "iniciar": "npm start",
+    "testar": "npm test"
+  },
+  "prontoQuando": "GET /saude responde 200",
+  "contato": { "camposExtrasValidos": {} }
+}
